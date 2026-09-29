@@ -1,7 +1,5 @@
-namespace LAD.Stat {
+namespace LARD.Stat {
     public enum ResourceType {
-        Health,
-        Mana,
-        Shield
     }
+
 }

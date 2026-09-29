@@ -1,6 +1,5 @@
-namespace LAD.Buff {
+namespace LARD.Buff {
     public enum BuffType {
-        Buff,
-        Debuff
     }
+
 }

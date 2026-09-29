@@ -1,11 +1,5 @@
-using LSJ.State;
+namespace LARD.Battle {
+    public abstract class BattleState {
+    }
 
-namespace LAD.Battle {
-	public abstract class BattleState : BaseState<BattleStateType> {
-		protected BattleManager BattleManager { get; }
-
-		protected BattleState(BattleManager battleManager) {
-			BattleManager = battleManager;
-		}
-	}
 }

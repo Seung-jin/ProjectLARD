@@ -1,3 +1,4 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace LARD.Skill {
@@ -7,7 +8,11 @@ namespace LARD.Skill {
     public sealed class SkillGradeData {
     }
 
+    [CreateAssetMenu(fileName = "SkillModel", menuName = "Data/Skill/Model")]
     public sealed class SkillModel : ScriptableObject {
+        public int Id;
+
+        [AssetSelector] public SkillBase Skill;
     }
 
 }

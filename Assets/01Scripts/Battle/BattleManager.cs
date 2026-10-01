@@ -1,11 +1,14 @@
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using LARD.Article;
+using LARD.Data;
 using UnityEngine;
 
 namespace LARD.Battle {
     [RequireComponent(typeof(GameInputController), typeof(BattleInputLogic))]
     public sealed class BattleManager : MonoBehaviour {
         [SerializeField, Min(0f)] private float _formationGap = 0.1f;
+        [SerializeField] private Map _map;
 
         private readonly List<ArticleObj> _selectedArticles = new();
         private GameInputController _input;
@@ -17,6 +20,11 @@ namespace LARD.Battle {
             _input = GetComponent<GameInputController>();
             _inputLogic = GetComponent<BattleInputLogic>();
             _inputLogic.Initialize(this);
+            _map ??= FindFirstObjectByType<Map>();
+        }
+
+        private void Start() {
+            DataManager.Init().Forget();
         }
 
         private void OnEnable() {
@@ -69,6 +77,13 @@ namespace LARD.Battle {
             float stepY = height + _formationGap;
             int columns = Mathf.CeilToInt(Mathf.Sqrt(count));
             int rows = Mathf.CeilToInt((float)count / columns);
+
+            if (_map != null) {
+                Vector2 formationHalfExtents = new Vector2(
+                    (columns - 1) * stepX * 0.5f + width * 0.5f,
+                    (rows - 1) * stepY * 0.5f + height * 0.5f);
+                destination = _map.ClampArticlePosition(destination, formationHalfExtents);
+            }
 
             for (int i = 0; i < count; i++) {
                 if (_selectedArticles[i].MoveComponent is not MoveComponentDestination movement) {

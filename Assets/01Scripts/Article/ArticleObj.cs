@@ -23,12 +23,15 @@ namespace LARD.Article {
         internal void Initialize(ArticleModel model, int id) {
             Model = model;
             Id = id;
+            _moveComponent?.SetMoveSpeed(model.MoveSpeed);
         }
 
         public override void OnReleaseToPool() {
             if (_moveComponent != null) {
                 _moveComponent.Stop();
             }
+
+            _skillController?.ClearSkill();
 
             Model = null;
             Id = 0;

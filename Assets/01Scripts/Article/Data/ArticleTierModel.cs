@@ -7,10 +7,12 @@ namespace LARD.Article {
         [SerializeField, Min(1)] private int _tier = 1;
         [SerializeField, Min(0)] private int _upgradeCost;
         [SerializeField, Min(0)] private int _saleCost;
+        [SerializeField, Min(0)] private int _drawWeight;
 
         public ArticleModel Article => _article;
         public int Tier => _tier;
         public int UpgradeCost => _upgradeCost;
         public int SaleCost => _saleCost;
+        public int DrawWeight => _drawWeight;
     }
 }

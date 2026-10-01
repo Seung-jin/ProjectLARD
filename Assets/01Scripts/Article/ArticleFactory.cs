@@ -18,6 +18,18 @@ namespace LARD.Article {
         }
 
         public ArticleObj Create(ArticleModel model, Vector3 position, Quaternion rotation) {
+            return Create(model, model != null ? model.Tier : 0, position, rotation);
+        }
+
+        public ArticleObj Create(ArticleTierModel tierModel, Vector3 position, Quaternion rotation) {
+            if (tierModel == null || tierModel.Article == null) {
+                throw new ArgumentException("ArticleTierModel must reference an ArticleModel.", nameof(tierModel));
+            }
+
+            return Create(tierModel.Article, tierModel.Tier, position, rotation);
+        }
+
+        private ArticleObj Create(ArticleModel model, int tier, Vector3 position, Quaternion rotation) {
             if (model == null || model.Prefab == null) {
                 throw new ArgumentException("ArticleModel must reference an ArticleObj prefab.", nameof(model));
             }
@@ -37,11 +49,16 @@ namespace LARD.Article {
             }
 
             ArticleObj article = pool.Get(position, rotation);
-            article.Initialize(model, Counter.Next(CounterKey));
-            if (model.Skill != null) {
-                article.SkillController.SetSkill(model.Skill, _skillFactory.Create(model.Skill, article));
+            try {
+                article.Initialize(model, Counter.Next(CounterKey), tier);
+                if (model.Skill != null) {
+                    article.SkillController.SetSkill(model.Skill, _skillFactory.Create(model.Skill, article));
+                }
+                return article;
+            } catch {
+                article.Release();
+                throw;
             }
-            return article;
         }
 
         public void Release(ArticleObj article) {

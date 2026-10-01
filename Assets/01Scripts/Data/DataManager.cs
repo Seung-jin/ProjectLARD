@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using LARD.Article;
+using LARD.Player;
 using LARD.Shop;
 
 namespace LARD.Data {
@@ -8,6 +9,7 @@ namespace LARD.Data {
         private static readonly List<IDataSet> _dataSets = new() {
             new ArticleDataSet(),
             new ShopDataSet(),
+            new PlayerDataSet(),
         };
 
         public static async UniTask Init() {

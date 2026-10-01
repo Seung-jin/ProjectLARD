@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: ShopConstModel
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Shop.ShopConstModel
   Id: 1
-  PurchaseCost: 100
+  PurchaseCost: 10

@@ -51,7 +51,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Article.ArticleObj
   _graphicController: {fileID: 100007}
-  _moveComponent: {fileID: 0}
+  _moveComponent: {fileID: 917833008803751036}
   _skillController: {fileID: 100006}
 --- !u!114 &100007
 MonoBehaviour:

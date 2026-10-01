@@ -9,6 +9,7 @@ namespace LARD.Article {
         [SerializeField] private SkillController _skillController;
 
         public int Id { get; private set; }
+        public int Tier { get; private set; }
         public ArticleModel Model { get; private set; }
         public MoveComponent MoveComponent => _moveComponent;
         public SkillController SkillController => _skillController;
@@ -20,9 +21,10 @@ namespace LARD.Article {
             _graphicController ??= GetComponent<GraphicController>();
         }
 
-        internal void Initialize(ArticleModel model, int id) {
+        internal void Initialize(ArticleModel model, int id, int tier) {
             Model = model;
             Id = id;
+            Tier = tier;
             _moveComponent?.SetMoveSpeed(model.MoveSpeed);
         }
 
@@ -35,6 +37,7 @@ namespace LARD.Article {
 
             Model = null;
             Id = 0;
+            Tier = 0;
             base.OnReleaseToPool();
         }
     }

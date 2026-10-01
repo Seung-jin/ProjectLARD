@@ -28,31 +28,31 @@ MonoBehaviour:
     - Shop
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d1dd5867cf82416f9191d879cdb6cabe
-    m_Address: Assets/04Data/ArticleDataSet/SampleArticle.asset
+    m_Address: Assets/04Data/ArticleDataSet/Article1_Yoz.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - Article
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d2d6f8bdd01a4faab5a79a785180eea1
-    m_Address: Assets/04Data/ArticleDataSet/SampleArticleTier1.asset
+    m_Address: Assets/04Data/ArticleDataSet/ArticleTier1.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - Article
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d3f611314f6b449db5e954b29c021975
-    m_Address: Assets/04Data/ArticleDataSet/SampleArticleTier2.asset
+    m_Address: Assets/04Data/ArticleDataSet/ArticleTier2.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - Article
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d4debd7f3e7b4ca7b8ce23d99729e214
-    m_Address: Assets/04Data/ArticleDataSet/SampleArticleTier3.asset
+    m_Address: Assets/04Data/ArticleDataSet/ArticleTier3.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - Article
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d5f648dc97e84a15be5852968e917037
-    m_Address: Assets/04Data/ArticleDataSet/SampleArticleTier4.asset
+    m_Address: Assets/04Data/ArticleDataSet/ArticleTier4.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - Article

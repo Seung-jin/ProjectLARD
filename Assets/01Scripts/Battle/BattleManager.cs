@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using LARD.Article;
 using LARD.Data;
+using LARD.Shop;
 using UnityEngine;
 
 namespace LARD.Battle {
@@ -13,6 +14,7 @@ namespace LARD.Battle {
         private readonly List<ArticleObj> _selectedArticles = new();
         private GameInputController _input;
         private BattleInputLogic _inputLogic;
+        private ArticleFactory _articleFactory;
 
         public IReadOnlyList<ArticleObj> SelectedArticles => _selectedArticles;
 
@@ -21,6 +23,7 @@ namespace LARD.Battle {
             _inputLogic = GetComponent<BattleInputLogic>();
             _inputLogic.Initialize(this);
             _map ??= FindFirstObjectByType<Map>();
+            _articleFactory = new ArticleFactory();
         }
 
         private void Start() {
@@ -31,6 +34,7 @@ namespace LARD.Battle {
             _input.AddSelectPressedListener(_inputLogic.OnSelectPressed);
             _input.AddSelectReleasedListener(_inputLogic.OnSelectReleased);
             _input.AddMoveListener(_inputLogic.OnMoveCommand);
+            _input.AddDrawArticleListener(OnTestDrawArticle);
             Debug.Log("[BattleInput] BattleManager registered input listeners.", this);
         }
 
@@ -38,6 +42,7 @@ namespace LARD.Battle {
             _input.RemoveSelectPressedListener(_inputLogic.OnSelectPressed);
             _input.RemoveSelectReleasedListener(_inputLogic.OnSelectReleased);
             _input.RemoveMoveListener(_inputLogic.OnMoveCommand);
+            _input.RemoveDrawArticleListener(OnTestDrawArticle);
             _inputLogic.CancelDrag();
         }
 
@@ -54,6 +59,20 @@ namespace LARD.Battle {
         public void ClearSelection() {
             _selectedArticles.Clear();
         }
+
+        public bool TryDrawArticle(out ArticleObj article) {
+            return ShopLogic.TryDrawArticle(_map, _articleFactory, out article);
+        }
+
+        #region Test Code
+        private void OnTestDrawArticle() {
+            if (TryDrawArticle(out ArticleObj article)) {
+                Debug.Log($"[BattleInput] Drew article {article.Model.Id}, tier {article.Tier}.", article);
+            } else {
+                Debug.LogWarning("[BattleInput] Article draw failed. Check Silver and loaded shop data.", this);
+            }
+        }
+        #endregion
 
         public void MoveSelectedArticles(Vector2 destination) {
             _selectedArticles.RemoveAll(article => article == null || !article.gameObject.activeInHierarchy);

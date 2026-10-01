@@ -10,9 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bde134451cd749df89c19b1f6e761e9f, type: 3}
-  m_Name: SampleArticleTier2
+  m_Name: ArticleTier3
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Article.ArticleTierModel
   _article: {fileID: 11400000, guid: d1dd5867cf82416f9191d879cdb6cabe, type: 2}
-  _tier: 2
-  _upgradeCost: 200
-  _saleCost: 125
+  _tier: 3
+  _upgradeCost: 500
+  _saleCost: 300
+  _drawWeight: 0

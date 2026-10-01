@@ -10,11 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73cdeac3945a44ae95372d6d044a7546, type: 3}
-  m_Name: SampleArticle
+  m_Name: Article1_Yoz
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Article.ArticleModel
   Id: 1
-  Range: 5
+  Race: 0
+  Tier: 1
   AttackPower: 100
   AttackSpeed: 1
   MoveSpeed: 3
-  Prefab: {fileID: 100004, guid: 8a8ac2e19d3042e8ad9fe3c8472b5162, type: 3}
+  Range: 5
+  Prefab: {fileID: 900000000000000002, guid: ada24397d24f45888f57bd564888235c, type: 3}
+  Skill: {fileID: 11400000, guid: e8b272f68b3a4e0981cc20b3551ca9e3, type: 2}

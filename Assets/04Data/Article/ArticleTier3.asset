@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Article.ArticleTierModel
   _article: {fileID: 11400000, guid: d1dd5867cf82416f9191d879cdb6cabe, type: 2}
   _tier: 3
-  _upgradeCost: 500
+  _nextTier: {fileID: 0}
+  _upgradeCost: 0
+  _upgradeProbability: 0
   _saleCost: 300
   _drawWeight: 0

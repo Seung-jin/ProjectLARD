@@ -26,6 +26,8 @@ namespace LARD.Stage {
         private bool _hasWon;
         private bool _disposed;
 
+        public ArticleFactory ArticleFactory => _articleFactory;
+
         public StageLogic(Map map, float formationGap, List<ArticleObj> selectedArticles, Action<StageModel> startStage, Action completeVictory) {
             _map = map;
             _formationGap = formationGap;

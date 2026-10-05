@@ -13,12 +13,15 @@ namespace LARD.Battle {
         #region Test Code
         private InputAction _drawArticleCommand;
         private event Action DrawArticleCommand;
+        private InputAction _upgradeArticleCommand;
+        private event Action UpgradeArticleCommand;
         #endregion
 
         private void Awake() {
             _selectCommand = new InputAction("SelectCommand", InputActionType.Button, "<Mouse>/leftButton");
             _moveCommand = new InputAction("MoveCommand", InputActionType.Button, "<Mouse>/rightButton");
             _drawArticleCommand = new InputAction("DrawArticleCommand", InputActionType.Button, "<Keyboard>/1");
+            _upgradeArticleCommand = new InputAction("UpgradeArticleCommand", InputActionType.Button, "<Keyboard>/2");
         }
 
         private void OnEnable() {
@@ -26,9 +29,11 @@ namespace LARD.Battle {
             _selectCommand.canceled += OnSelectReleased;
             _moveCommand.performed += OnMoveCommand;
             _drawArticleCommand.performed += OnDrawArticleCommand;
+            _upgradeArticleCommand.performed += OnUpgradeArticleCommand;
             _selectCommand.Enable();
             _moveCommand.Enable();
             _drawArticleCommand.Enable();
+            _upgradeArticleCommand.Enable();
         }
 
         private void OnDisable() {
@@ -36,15 +41,18 @@ namespace LARD.Battle {
             _selectCommand.canceled -= OnSelectReleased;
             _moveCommand.performed -= OnMoveCommand;
             _drawArticleCommand.performed -= OnDrawArticleCommand;
+            _upgradeArticleCommand.performed -= OnUpgradeArticleCommand;
             _selectCommand.Disable();
             _moveCommand.Disable();
             _drawArticleCommand.Disable();
+            _upgradeArticleCommand.Disable();
         }
 
         private void OnDestroy() {
             _selectCommand.Dispose();
             _moveCommand.Dispose();
             _drawArticleCommand.Dispose();
+            _upgradeArticleCommand.Dispose();
         }
 
         public void AddSelectPressedListener(Action<Vector2> listener) {
@@ -80,9 +88,22 @@ namespace LARD.Battle {
             DrawArticleCommand -= listener;
         }
 
+        public void AddUpgradeArticleListener(Action listener) {
+            UpgradeArticleCommand += listener;
+        }
+
+        public void RemoveUpgradeArticleListener(Action listener) {
+            UpgradeArticleCommand -= listener;
+        }
+
         private void OnDrawArticleCommand(InputAction.CallbackContext context) {
             Debug.Log("[BattleInput] Test draw requested with key 1.", this);
             DrawArticleCommand?.Invoke();
+        }
+
+        private void OnUpgradeArticleCommand(InputAction.CallbackContext context) {
+            Debug.Log("[BattleInput] Test upgrade requested with key 2.", this);
+            UpgradeArticleCommand?.Invoke();
         }
         #endregion
 

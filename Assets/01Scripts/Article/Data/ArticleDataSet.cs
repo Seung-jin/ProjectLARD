@@ -10,11 +10,13 @@ namespace LARD.Article {
 
 		private static Dictionary<int, ArticleModel> _models = new();
 		private static readonly List<ArticleTierModel> _tierModels = new();
+		private static readonly Dictionary<(int articleId, int tier), ArticleTierModel> _tierModelsByArticle = new();
 		private static readonly ProbTable<ArticleTierModel> _drawTable = new(tier => tier.DrawWeight);
 
 		public async UniTask Load() {
 			_models.Clear();
 			_tierModels.Clear();
+			_tierModelsByArticle.Clear();
 			_drawTable.Clear();
 
 			IList<ScriptableObject> assets = await AddressableManager.LoadAssetAsyncList<ScriptableObject>(
@@ -42,6 +44,8 @@ namespace LARD.Article {
 		}
 
 		public static ArticleModel GetModel(int id) => _models.GetValueOrDefault(id);
+		public static ArticleTierModel GetTierModel(int articleId, int tier) =>
+			_tierModelsByArticle.GetValueOrDefault((articleId, tier));
 		public static bool TryPickArticleTier(out ArticleTierModel tier) {
 			tier = _drawTable.Count > 0 ? _drawTable.Pick() : null;
 			return tier != null;
@@ -50,6 +54,9 @@ namespace LARD.Article {
 		private static void AddAsset(ScriptableObject asset) {
 			if (asset is ArticleTierModel tierModel) {
 				_tierModels.Add(tierModel);
+				if (tierModel.Article != null && !_tierModelsByArticle.TryAdd((tierModel.Article.Id, tierModel.Tier), tierModel)) {
+					Debug.LogError($"ArticleTierModel이 중복되었습니다: {tierModel.Article.Id}, tier {tierModel.Tier} ({tierModel.name})");
+				}
 				return;
 			}
 

@@ -16,6 +16,7 @@ namespace LARD.Battle {
 		private GameInputController _input;
 		private BattleInputLogic _inputLogic;
 		private StageLogic _stageLogic;
+		private ArticleLogic _articleLogic;
 
 		public IReadOnlyList<ArticleObj> SelectedArticles => _selectedArticles;
 		public StageModel CurrentStage { get; private set; }
@@ -29,6 +30,7 @@ namespace LARD.Battle {
 			_inputLogic.Initialize(this);
 			_map ??= FindFirstObjectByType<Map>();
 			_stageLogic = new StageLogic(_map, _formationGap, _selectedArticles, StartStage, CompleteVictory);
+			_articleLogic = new ArticleLogic(_selectedArticles, _stageLogic.ArticleFactory);
 		}
 
 		private void Start() {
@@ -65,6 +67,7 @@ namespace LARD.Battle {
 			_input.AddSelectReleasedListener(_inputLogic.OnSelectReleased);
 			_input.AddMoveListener(_inputLogic.OnMoveCommand);
 			_input.AddDrawArticleListener(_stageLogic.OnTestDrawArticle);
+			_input.AddUpgradeArticleListener(OnTestUpgradeSelectedArticle);
 			Debug.Log("[BattleInput] BattleManager registered input listeners.", this);
 		}
 
@@ -73,6 +76,7 @@ namespace LARD.Battle {
 			_input.RemoveSelectReleasedListener(_inputLogic.OnSelectReleased);
 			_input.RemoveMoveListener(_inputLogic.OnMoveCommand);
 			_input.RemoveDrawArticleListener(_stageLogic.OnTestDrawArticle);
+			_input.RemoveUpgradeArticleListener(OnTestUpgradeSelectedArticle);
 			_inputLogic.CancelDrag();
 		}
 
@@ -90,6 +94,18 @@ namespace LARD.Battle {
 
 		public void MoveSelectedArticles(Vector2 destination) {
 			_stageLogic.MoveSelectedArticles(destination);
+		}
+
+		public bool TryUpgradeSelectedArticle() {
+			return _articleLogic.TryUpgradeSelectedArticle();
+		}
+
+		private void OnTestUpgradeSelectedArticle() {
+			if (TryUpgradeSelectedArticle()) {
+				Debug.Log($"[BattleInput] Upgraded selected article to tier {_selectedArticles[0].Tier}.", _selectedArticles[0]);
+			} else {
+				Debug.LogWarning("[BattleInput] Article upgrade failed. Check selection, Silver, tier data, and upgrade chance.", this);
+			}
 		}
 	}
 }

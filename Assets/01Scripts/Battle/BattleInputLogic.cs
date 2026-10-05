@@ -1,4 +1,3 @@
-using LARD.Article;
 using UnityEngine;
 
 namespace LARD.Battle {
@@ -34,56 +33,21 @@ namespace LARD.Battle {
 
             if ((screenPosition - _dragStart).sqrMagnitude < _dragThresholdPixels * _dragThresholdPixels) {
                 Debug.Log($"[BattleInput] Click resolved at world {end}.", this);
-                SelectAt(end);
+                _battleManager.SelectAt(end);
             } else {
                 Debug.Log($"[BattleInput] Drag resolved from world {start} to {end}.", this);
-                SelectArea(start, end);
+                _battleManager.SelectArea(start, end);
             }
         }
 
         public void OnMoveCommand(Vector2 screenPosition) {
-            if (_battleManager != null && _battleManager.SelectedArticles.Count > 0 &&
-                TryScreenToWorld(screenPosition, out Vector2 destination)) {
+            if (_battleManager != null && TryScreenToWorld(screenPosition, out Vector2 destination)) {
                 _battleManager.MoveSelectedArticles(destination);
             }
         }
 
         public void CancelDrag() {
             _isDragging = false;
-        }
-
-        private void SelectAt(Vector2 position) {
-            Collider2D[] hits = Physics2D.OverlapPointAll(position);
-            Debug.Log($"[BattleInput] Point query at {position} found {hits.Length} colliders.", this);
-            _battleManager.ClearSelection();
-
-            foreach (Collider2D hit in hits) {
-                ArticleObj article = hit.GetComponentInParent<ArticleObj>();
-                if (article != null && article.gameObject.activeInHierarchy) {
-                    _battleManager.Select(article);
-                    Debug.Log($"[BattleInput] Selected {article.name} (ID {article.Id}).", article);
-                    return;
-                }
-            }
-
-            Debug.Log("[BattleInput] No article selected; selection cleared.", this);
-        }
-
-        private void SelectArea(Vector2 start, Vector2 end) {
-            Vector2 min = Vector2.Min(start, end);
-            Vector2 max = Vector2.Max(start, end);
-            Collider2D[] hits = Physics2D.OverlapAreaAll(min, max);
-            Debug.Log($"[BattleInput] Area query from {min} to {max} found {hits.Length} colliders.", this);
-
-            _battleManager.ClearSelection();
-            foreach (Collider2D hit in hits) {
-                ArticleObj article = hit.GetComponentInParent<ArticleObj>();
-                if (article != null && article.gameObject.activeInHierarchy) {
-                    _battleManager.Select(article);
-                }
-            }
-
-            Debug.Log($"[BattleInput] Drag selected {_battleManager.SelectedArticles.Count} articles.", this);
         }
 
         private bool TryScreenToWorld(Vector2 screenPosition, out Vector2 worldPosition) {

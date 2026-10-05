@@ -6,10 +6,19 @@ namespace LARD.Article {
 
         private Vector2 _destination;
         private bool _hasDestination;
+        private SkillController _skillController;
+
+        public bool IsMoving => _hasDestination;
+
+        protected override void Awake() {
+            base.Awake();
+            _skillController = GetComponent<SkillController>();
+        }
 
         public void SetDestination(Vector2 destination) {
             _destination = destination;
             _hasDestination = true;
+            _skillController?.CancelCurrentSkill();
         }
 
         public override void Move() {

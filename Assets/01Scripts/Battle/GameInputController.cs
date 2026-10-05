@@ -29,7 +29,6 @@ namespace LARD.Battle {
             _selectCommand.Enable();
             _moveCommand.Enable();
             _drawArticleCommand.Enable();
-            Debug.Log($"[BattleInput] Input enabled. Mouse present: {Mouse.current != null}, left controls: {_selectCommand.controls.Count}, right controls: {_moveCommand.controls.Count}", this);
         }
 
         private void OnDisable() {
@@ -110,7 +109,6 @@ namespace LARD.Battle {
         private void OnMoveCommand(InputAction.CallbackContext context) {
             if (Mouse.current != null) {
                 Vector2 position = Mouse.current.position.ReadValue();
-                Debug.Log($"[BattleInput] Right clicked at screen {position}. Listeners: {MoveCommand?.GetInvocationList().Length ?? 0}", this);
                 MoveCommand?.Invoke(position);
             } else {
                 Debug.LogWarning("[BattleInput] Right click received, but Mouse.current is null.", this);

@@ -5,12 +5,12 @@ using UnityEngine;
 namespace LARD.Skill {
     public sealed class SkillFactory {
         public SkillBase Create(SkillModel model, ArticleObj owner) {
-            if (model == null || model.Skill == null) {
-                throw new ArgumentException("SkillModel must reference a SkillBase asset.", nameof(model));
+            if (model == null) {
+                throw new ArgumentNullException(nameof(model));
             }
 
-            SkillBase skill = UnityEngine.Object.Instantiate(model.Skill);
-            skill.Initialize(owner);
+            SkillBase skill = ScriptableObject.CreateInstance<SkillBase>();
+            skill.Initialize(owner, model);
             return skill;
         }
     }

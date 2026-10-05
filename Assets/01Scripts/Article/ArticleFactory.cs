@@ -33,10 +33,6 @@ namespace LARD.Article {
             if (model == null || model.Prefab == null) {
                 throw new ArgumentException("ArticleModel must reference an ArticleObj prefab.", nameof(model));
             }
-            if (model.Skill != null && model.Skill.Skill == null) {
-                throw new ArgumentException("ArticleModel's SkillModel must reference a SkillBase asset.", nameof(model));
-            }
-
             ArticleObj prefab = model.Prefab;
             string key = prefab.name;
 

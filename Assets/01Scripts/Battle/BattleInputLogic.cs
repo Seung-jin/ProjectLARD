@@ -42,10 +42,8 @@ namespace LARD.Battle {
         }
 
         public void OnMoveCommand(Vector2 screenPosition) {
-            Debug.Log($"[BattleInput] Move requested. Selected units: {_battleManager?.SelectedArticles.Count ?? 0}", this);
             if (_battleManager != null && _battleManager.SelectedArticles.Count > 0 &&
                 TryScreenToWorld(screenPosition, out Vector2 destination)) {
-                Debug.Log($"[BattleInput] Move destination: {destination}", this);
                 _battleManager.MoveSelectedArticles(destination);
             }
         }

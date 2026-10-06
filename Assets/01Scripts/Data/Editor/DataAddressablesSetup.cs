@@ -4,6 +4,7 @@ using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 using LARD.Article;
 using LARD.Shop;
+using LARD.Upgrade;
 
 namespace LARD.Data.Editor {
     public static class DataAddressablesSetup {
@@ -24,6 +25,7 @@ namespace LARD.Data.Editor {
 
             bool changed = RegisterFolder(settings, "ShopDataSet", ShopDataSet.AddressableLabel);
             changed |= RegisterFolder(settings, "ArticleDataSet", ArticleDataSet.AddressableLabel);
+            changed |= RegisterFolder(settings, "Upgrade", UpgradeDataSet.AddressableLabel);
             if (changed) {
                 AssetDatabase.SaveAssets();
             }

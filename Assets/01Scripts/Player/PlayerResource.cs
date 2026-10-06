@@ -4,7 +4,7 @@ using LARD.Stat;
 namespace LARD.Player {
     public sealed class PlayerResource {
         public long Silver { get; private set; } = 100;
-        public long Gold { get; private set; }
+        public long Gold { get; private set; } = 10;
 
         public long Get(ResourceType type) {
             return type switch {

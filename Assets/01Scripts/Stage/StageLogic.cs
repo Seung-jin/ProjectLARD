@@ -11,12 +11,14 @@ using UnityEngine;
 namespace LARD.Stage {
     public sealed class StageLogic : IDisposable {
         private static readonly TimeSpan MonsterSpawnInterval = TimeSpan.FromSeconds(0.5);
+        private static readonly int ArticleSelectionLayerMask = LayerMask.GetMask("ArticleSelection");
 
         private readonly Map _map;
         private readonly float _formationGap;
         private readonly List<ArticleObj> _selectedArticles;
         private readonly Action<StageModel> _startStage;
         private readonly Action _completeVictory;
+        private readonly Action _monsterDied;
         private readonly ArticleFactory _articleFactory = new();
         private readonly MonsterFactory _monsterFactory = new();
         private readonly List<MonsterObj> _aliveMonsters = new();
@@ -28,12 +30,14 @@ namespace LARD.Stage {
 
         public ArticleFactory ArticleFactory => _articleFactory;
 
-        public StageLogic(Map map, float formationGap, List<ArticleObj> selectedArticles, Action<StageModel> startStage, Action completeVictory) {
+        public StageLogic(Map map, float formationGap, List<ArticleObj> selectedArticles, Action<StageModel> startStage,
+                          Action completeVictory, Action monsterDied) {
             _map = map;
             _formationGap = formationGap;
             _selectedArticles = selectedArticles ?? throw new ArgumentNullException(nameof(selectedArticles));
             _startStage = startStage ?? throw new ArgumentNullException(nameof(startStage));
             _completeVictory = completeVictory ?? throw new ArgumentNullException(nameof(completeVictory));
+            _monsterDied = monsterDied ?? throw new ArgumentNullException(nameof(monsterDied));
         }
 
         public void Select(ArticleObj article) {
@@ -51,7 +55,7 @@ namespace LARD.Stage {
         }
 
         public void SelectAt(Vector2 position) {
-            Collider2D[] hits = Physics2D.OverlapPointAll(position);
+            Collider2D[] hits = Physics2D.OverlapPointAll(position, ArticleSelectionLayerMask);
             Debug.Log($"[BattleInput] Point query at {position} found {hits.Length} colliders.");
             ClearSelection();
 
@@ -70,7 +74,7 @@ namespace LARD.Stage {
         public void SelectArea(Vector2 start, Vector2 end) {
             Vector2 min = Vector2.Min(start, end);
             Vector2 max = Vector2.Max(start, end);
-            Collider2D[] hits = Physics2D.OverlapAreaAll(min, max);
+            Collider2D[] hits = Physics2D.OverlapAreaAll(min, max, ArticleSelectionLayerMask);
             Debug.Log($"[BattleInput] Area query from {min} to {max} found {hits.Length} colliders.");
 
             ClearSelection();
@@ -201,6 +205,7 @@ namespace LARD.Stage {
                 cancellationToken.ThrowIfCancellationRequested();
                 MonsterObj monster = _monsterFactory.Create(model, _map);
                 if (monster.IsAlive) {
+                    monster.MonsterObserver.AddListener(MonsterEventType.Died, OnMonsterDied);
                     monster.Released += OnMonsterReleased;
                     _aliveMonsters.Add(monster);
                 }
@@ -217,10 +222,13 @@ namespace LARD.Stage {
         }
 
         private void OnMonsterReleased(MonsterObj monster) {
+            monster.MonsterObserver.RemoveListener(MonsterEventType.Died, OnMonsterDied);
             monster.Released -= OnMonsterReleased;
             _aliveMonsters.Remove(monster);
             TryCompleteVictory();
         }
+
+        private void OnMonsterDied() => _monsterDied();
 
         private void TryCompleteVictory() {
             if (_hasWon || !_finalStageSpawnsCompleted || AliveMonsterCount != 0) {
@@ -241,6 +249,7 @@ namespace LARD.Stage {
             _stageSequenceCancellation?.Cancel();
             foreach (MonsterObj monster in _aliveMonsters) {
                 if (monster != null) {
+                    monster.MonsterObserver.RemoveListener(MonsterEventType.Died, OnMonsterDied);
                     monster.Released -= OnMonsterReleased;
                 }
             }

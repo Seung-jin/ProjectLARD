@@ -4,6 +4,8 @@ using Cysharp.Threading.Tasks;
 using LARD.Article;
 using LARD.Data;
 using LARD.Stage;
+using LARD.Upgrade;
+using LSJ.Util;
 using UnityEngine;
 
 namespace LARD.Battle {
@@ -17,8 +19,11 @@ namespace LARD.Battle {
 		private BattleInputLogic _inputLogic;
 		private StageLogic _stageLogic;
 		private ArticleLogic _articleLogic;
+		private BattleLogic _battleLogic;
 
 		public IReadOnlyList<ArticleObj> SelectedArticles => _selectedArticles;
+		public Observer<BattleEventType> BattleObserver { get; } = new();
+		public int MonsterKillCount { get; private set; }
 		public StageModel CurrentStage { get; private set; }
 		public BattleStateType State { get; private set; } = BattleStateType.Preparing;
 		public event Action VictoryAchieved;
@@ -29,11 +34,14 @@ namespace LARD.Battle {
 			_inputLogic = GetComponent<BattleInputLogic>();
 			_inputLogic.Initialize(this);
 			_map ??= FindFirstObjectByType<Map>();
-			_stageLogic = new StageLogic(_map, _formationGap, _selectedArticles, StartStage, CompleteVictory);
+			_stageLogic = new StageLogic(_map, _formationGap, _selectedArticles, StartStage, CompleteVictory,
+			                            () => BattleObserver.TriggerEvent(BattleEventType.MonsterDied));
 			_articleLogic = new ArticleLogic(_selectedArticles, _stageLogic.ArticleFactory);
+			_battleLogic = new BattleLogic(this);
 		}
 
 		private void Start() {
+			BattleObserver.AddListener(BattleEventType.MonsterDied, _battleLogic.OnMonsterDied);
 			StartStagesAsync().Forget();
 		}
 
@@ -68,6 +76,7 @@ namespace LARD.Battle {
 			_input.AddMoveListener(_inputLogic.OnMoveCommand);
 			_input.AddDrawArticleListener(_stageLogic.OnTestDrawArticle);
 			_input.AddUpgradeArticleListener(OnTestUpgradeSelectedArticle);
+			_input.AddUpgradeYozListener(OnTestUpgradeYoz);
 			Debug.Log("[BattleInput] BattleManager registered input listeners.", this);
 		}
 
@@ -77,12 +86,16 @@ namespace LARD.Battle {
 			_input.RemoveMoveListener(_inputLogic.OnMoveCommand);
 			_input.RemoveDrawArticleListener(_stageLogic.OnTestDrawArticle);
 			_input.RemoveUpgradeArticleListener(OnTestUpgradeSelectedArticle);
+			_input.RemoveUpgradeYozListener(OnTestUpgradeYoz);
 			_inputLogic.CancelDrag();
 		}
 
 		private void OnDestroy() {
+			BattleObserver.RemoveListener(BattleEventType.MonsterDied, _battleLogic.OnMonsterDied);
 			_stageLogic?.Dispose();
 		}
+
+		internal int RegisterMonsterKill() => ++MonsterKillCount;
 
 		public void SelectAt(Vector2 position) {
 			_stageLogic.SelectAt(position);
@@ -105,6 +118,15 @@ namespace LARD.Battle {
 				Debug.Log($"[BattleInput] Upgraded selected article to tier {_selectedArticles[0].Tier}.", _selectedArticles[0]);
 			} else {
 				Debug.LogWarning("[BattleInput] Article upgrade failed. Check selection, Silver, tier data, and upgrade chance.", this);
+			}
+		}
+
+		private void OnTestUpgradeYoz() {
+			if (UpgradeLogic.TryUpgrade(ArticleRace.Yoz)) {
+				PlayerUpgrade upgrade = UpgradeDataSet.GetPlayerUpgrade(ArticleRace.Yoz);
+				Debug.Log($"[BattleInput] Yoz upgraded to level {upgrade.Level}.", this);
+			} else {
+				Debug.LogWarning("[BattleInput] Yoz upgrade failed. Check Gold, level, and upgrade data.", this);
 			}
 		}
 	}

@@ -46,7 +46,7 @@ namespace LARD.Skill {
 
                 IAttackTarget target = targets[0];
                 for (int hit = 0; hit < data.HitCount && target.IsAlive; hit++) {
-                    effect.Apply(data, target);
+                    effect.Apply(Owner, data, target);
                     applied = true;
                 }
             }

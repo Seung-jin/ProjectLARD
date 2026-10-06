@@ -5,6 +5,7 @@ using LARD.Monster;
 using LARD.Player;
 using LARD.Shop;
 using LARD.Stage;
+using LARD.Upgrade;
 
 namespace LARD.Data {
     public static class DataManager {
@@ -13,6 +14,7 @@ namespace LARD.Data {
             new MonsterDataSet(),
             new StageDataSet(),
             new ShopDataSet(),
+            new UpgradeDataSet(),
             new PlayerDataSet(),
         };
 

@@ -15,7 +15,7 @@ MonoBehaviour:
   m_DefaultGroup: 25cd8834317b08c46b2aaef61f6fab98
   m_currentHash:
     serializedVersion: 2
-    Hash: 616a6ab77a8180b1aa0ea7b9fbbdd040
+    Hash: 00000000000000000000000000000000
   m_ExtractTypeTreeData: 0
   m_DisableWriteTypeTree: 0
   m_OptimizeCatalogSize: 0
@@ -108,6 +108,7 @@ MonoBehaviour:
     - Monster
     - Stage
     - Skill
+    - Upgrade
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: f3529f04a681c8e4cb14231b4434ffda, type: 2}

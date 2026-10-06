@@ -7,6 +7,7 @@ namespace LARD.Article {
         [SerializeField] private GraphicController _graphicController;
         [SerializeField] private MoveComponent _moveComponent;
         [SerializeField] private SkillController _skillController;
+        [SerializeField] private UIArticleObj _uiArticleObj;
 
         public int Id { get; private set; }
         public int Tier { get; private set; }
@@ -19,6 +20,7 @@ namespace LARD.Article {
             _moveComponent ??= GetComponent<MoveComponent>();
             _skillController ??= GetComponent<SkillController>();
             _graphicController ??= GetComponent<GraphicController>();
+            _uiArticleObj ??= GetComponentInChildren<UIArticleObj>(true);
         }
 
         internal void Initialize(ArticleModel model, int id, int tier) {
@@ -26,6 +28,7 @@ namespace LARD.Article {
             Id = id;
             Tier = tier;
             _moveComponent?.SetMoveSpeed(model.MoveSpeed);
+            _uiArticleObj?.SetInfo(model.Race, tier);
         }
 
         public override void OnReleaseToPool() {
@@ -34,6 +37,7 @@ namespace LARD.Article {
             }
 
             _skillController?.ClearSkill();
+            _uiArticleObj?.Clear();
 
             Model = null;
             Id = 0;

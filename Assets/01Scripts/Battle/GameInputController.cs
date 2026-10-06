@@ -15,6 +15,8 @@ namespace LARD.Battle {
         private event Action DrawArticleCommand;
         private InputAction _upgradeArticleCommand;
         private event Action UpgradeArticleCommand;
+        private InputAction _upgradeYozCommand;
+        private event Action UpgradeYozCommand;
         #endregion
 
         private void Awake() {
@@ -22,6 +24,7 @@ namespace LARD.Battle {
             _moveCommand = new InputAction("MoveCommand", InputActionType.Button, "<Mouse>/rightButton");
             _drawArticleCommand = new InputAction("DrawArticleCommand", InputActionType.Button, "<Keyboard>/1");
             _upgradeArticleCommand = new InputAction("UpgradeArticleCommand", InputActionType.Button, "<Keyboard>/2");
+            _upgradeYozCommand = new InputAction("UpgradeYozCommand", InputActionType.Button, "<Keyboard>/4");
         }
 
         private void OnEnable() {
@@ -30,10 +33,12 @@ namespace LARD.Battle {
             _moveCommand.performed += OnMoveCommand;
             _drawArticleCommand.performed += OnDrawArticleCommand;
             _upgradeArticleCommand.performed += OnUpgradeArticleCommand;
+            _upgradeYozCommand.performed += OnUpgradeYozCommand;
             _selectCommand.Enable();
             _moveCommand.Enable();
             _drawArticleCommand.Enable();
             _upgradeArticleCommand.Enable();
+            _upgradeYozCommand.Enable();
         }
 
         private void OnDisable() {
@@ -42,10 +47,12 @@ namespace LARD.Battle {
             _moveCommand.performed -= OnMoveCommand;
             _drawArticleCommand.performed -= OnDrawArticleCommand;
             _upgradeArticleCommand.performed -= OnUpgradeArticleCommand;
+            _upgradeYozCommand.performed -= OnUpgradeYozCommand;
             _selectCommand.Disable();
             _moveCommand.Disable();
             _drawArticleCommand.Disable();
             _upgradeArticleCommand.Disable();
+            _upgradeYozCommand.Disable();
         }
 
         private void OnDestroy() {
@@ -53,6 +60,7 @@ namespace LARD.Battle {
             _moveCommand.Dispose();
             _drawArticleCommand.Dispose();
             _upgradeArticleCommand.Dispose();
+            _upgradeYozCommand.Dispose();
         }
 
         public void AddSelectPressedListener(Action<Vector2> listener) {
@@ -96,6 +104,14 @@ namespace LARD.Battle {
             UpgradeArticleCommand -= listener;
         }
 
+        public void AddUpgradeYozListener(Action listener) {
+            UpgradeYozCommand += listener;
+        }
+
+        public void RemoveUpgradeYozListener(Action listener) {
+            UpgradeYozCommand -= listener;
+        }
+
         private void OnDrawArticleCommand(InputAction.CallbackContext context) {
             Debug.Log("[BattleInput] Test draw requested with key 1.", this);
             DrawArticleCommand?.Invoke();
@@ -104,6 +120,11 @@ namespace LARD.Battle {
         private void OnUpgradeArticleCommand(InputAction.CallbackContext context) {
             Debug.Log("[BattleInput] Test upgrade requested with key 2.", this);
             UpgradeArticleCommand?.Invoke();
+        }
+
+        private void OnUpgradeYozCommand(InputAction.CallbackContext context) {
+            Debug.Log("[BattleInput] Test Yoz upgrade requested with key 4.", this);
+            UpgradeYozCommand?.Invoke();
         }
         #endregion
 

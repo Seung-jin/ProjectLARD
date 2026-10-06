@@ -17,5 +17,5 @@ MonoBehaviour:
   - Target: 0
     Effect: 0
     Timing: 0
-    Damage: 10
+    AttackPowerRatio: 0.1
     HitCount: 1

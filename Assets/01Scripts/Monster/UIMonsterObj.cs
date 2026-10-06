@@ -1,7 +1,7 @@
 using UnityEngine;
 
 namespace LARD.Monster {
-    public sealed class MonsterHealthBar : MonoBehaviour {
+    public sealed class UIMonsterObj : MonoBehaviour {
         private const float FillWidth = 0.56f;
         private const float FillHeight = 0.05f;
 

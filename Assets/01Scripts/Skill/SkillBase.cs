@@ -12,6 +12,11 @@ namespace LARD.Skill {
     public class SkillBase : ScriptableObject {
         public ArticleObj Owner { get; private set; }
         public SkillModel Model { get; private set; }
+        protected SkillFactory Factory { get; private set; }
+
+        internal void SetFactory(SkillFactory factory) {
+            Factory = factory;
+        }
 
         public virtual void Initialize(ArticleObj owner, SkillModel model) {
             Owner = owner;

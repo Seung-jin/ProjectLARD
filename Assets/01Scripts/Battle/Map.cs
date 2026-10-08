@@ -13,6 +13,7 @@ namespace LARD.Battle {
         private static Sprite _tileSprite;
 
         public float ArticleAreaSize => _articleAreaSize;
+        public float MonsterPathWidth => _monsterPathWidth;
         public Vector2 ArticleSpawnPosition => transform.position;
         public Vector2 MonsterSpawnPosition => GetMonsterWaypoint(0);
 

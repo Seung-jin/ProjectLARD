@@ -2,6 +2,7 @@ using System;
 using LARD.Battle;
 using LARD.Stat;
 using LARD.Skill;
+using LARD.Effects;
 using LSJ.Util;
 using UnityEngine;
 
@@ -26,6 +27,7 @@ namespace LARD.Monster {
         public Observer<MonsterEventType> MonsterObserver { get; private set; } = new();
 
         public MonsterModel Model => _model;
+        public EffectController EffectController { get; } = new();
         public int Id { get; private set; }
         public StatController StatController => _statController;
         public MoveComponentMonsterPath MoveComponent => _moveComponent;
@@ -58,6 +60,7 @@ namespace LARD.Monster {
         }
 
         public void Initialize(MonsterModel model, Map map) {
+            EffectController.Clear();
             Id = Counter.Next(CounterKey);
             _model = model;
             _map = map;
@@ -84,6 +87,7 @@ namespace LARD.Monster {
         }
 
         public override void OnReleaseToPool() {
+            EffectController.Clear();
             _moveComponent.SetPath(null);
             _moveComponent.enabled = false;
             _map = null;

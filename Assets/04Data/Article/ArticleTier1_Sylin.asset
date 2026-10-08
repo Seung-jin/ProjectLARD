@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bde134451cd749df89c19b1f6e761e9f, type: 3}
-  m_Name: ArticleTier2
+  m_Name: ArticleTier1_Sylin
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Article.ArticleTierModel
   _article: {fileID: 11400000, guid: 741314829e8f4e519e55cdcbc2baa0a6, type: 2}
-  _tier: 2
-  _nextTier: {fileID: 11400000, guid: d4debd7f3e7b4ca7b8ce23d99729e214, type: 2}
-  _upgradeCost: 25
-  _upgradeProbability: 0.3
-  _saleCost: 125
-  _drawWeight: 0
+  _tier: 1
+  _nextTier: {fileID: 0}
+  _upgradeCost: 0
+  _upgradeProbability: 0
+  _saleCost: 50
+  _drawWeight: 100

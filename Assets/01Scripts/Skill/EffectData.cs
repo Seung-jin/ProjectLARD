@@ -13,5 +13,7 @@ namespace LARD.Skill {
         [Min(0f), Tooltip("Damage multiplier of the article's attack power (1 = 100%).")]
         public float AttackPowerRatio = 1f;
         [Min(1)] public int HitCount = 1;
+        [Min(0f)] public float DurationSeconds;
+        [Min(0f)] public float ValuePercent;
     }
 }

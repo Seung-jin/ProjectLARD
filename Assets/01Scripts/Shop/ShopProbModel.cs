@@ -14,6 +14,36 @@ namespace LARD.Shop {
         public int Id;
         public List<TierWeight> TierWeights = new();
 
+        public bool TryPickTier(out int tier) {
+            tier = 0;
+            int totalWeight = 0;
+            foreach (TierWeight entry in TierWeights) {
+                if (entry.Weight > 0) {
+                    totalWeight += entry.Weight;
+                }
+            }
+
+            if (totalWeight <= 0) {
+                return false;
+            }
+
+            int roll = UnityEngine.Random.Range(0, totalWeight);
+            foreach (TierWeight entry in TierWeights) {
+                if (entry.Weight <= 0) {
+                    continue;
+                }
+
+                if (roll < entry.Weight) {
+                    tier = entry.Tier;
+                    return true;
+                }
+
+                roll -= entry.Weight;
+            }
+
+            return false;
+        }
+
         public bool TryGetWeight(int tier, out int weight) {
             foreach (TierWeight entry in TierWeights) {
                 if (entry.Tier == tier) {

@@ -11,8 +11,11 @@ namespace LARD.Battle {
             int upgradeLevel = 0;
             float upgradePercent = GetUpgradePercent(model, out upgradeLevel);
             float defense = target.DefensePercent;
-            float damage = Mathf.Floor(baseDamage * (1f + upgradePercent / 100f) *
-                                      (1f - Mathf.Clamp(defense, 0f, 100f) / 100f));
+            float damageTakenIncrease = target is LARD.Monster.MonsterObj affectedMonster
+                ? affectedMonster.EffectController.DamageTakenIncreasePercent : 0f;
+            float mitigatedDamage = Mathf.Floor(baseDamage * (1f + upgradePercent / 100f) *
+                                                (1f - Mathf.Clamp(defense, 0f, 100f) / 100f));
+            float damage = mitigatedDamage * (1f + damageTakenIncrease / 100f);
 
             // TakeDamage can release a defeated monster to its pool, so snapshot its identity first.
             if (target is LARD.Monster.MonsterObj monster) {

@@ -9,6 +9,7 @@ using UnityEngine;
 namespace LARD.Shop {
     public static class ShopLogic {
         private const int ShopConstId = 1;
+        private const int ShopProbId = 1;
         private const float PlacementGap = 0.05f;
 
         public static bool TryDrawArticle(Map map, ArticleFactory factory, out ArticleObj article) {
@@ -25,6 +26,7 @@ namespace LARD.Shop {
 
             PlayerResource resource = PlayerDataSet.Resource;
             ShopConstModel constants = ShopDataSet.GetConstModel(ShopConstId);
+            ShopProbModel probabilities = ShopDataSet.GetProbModel(ShopProbId);
             if (resource == null) {
                 Debug.LogWarning("[ShopLogic] Article draw failed: PlayerResource is not loaded.");
                 return false;
@@ -35,14 +37,20 @@ namespace LARD.Shop {
                 return false;
             }
 
+            if (probabilities == null) {
+                Debug.LogWarning($"[ShopLogic] Article draw failed: ShopProbModel ID {ShopProbId} is not loaded.");
+                return false;
+            }
+
             int cost = constants.PurchaseCost;
             if (resource.Silver < cost) {
                 Debug.LogWarning($"[ShopLogic] Article draw failed: insufficient Silver (current: {resource.Silver}, cost: {cost}).");
                 return false;
             }
 
-            if (!ArticleDataSet.TryPickArticleTier(out ArticleTierModel tier)) {
-                Debug.LogWarning("[ShopLogic] Article draw failed: the ArticleTier draw table is empty or has no positive weights.");
+            if (!probabilities.TryPickTier(out int tierNumber) ||
+                !ArticleDataSet.TryPickArticleTier(tierNumber, out ArticleTierModel tier)) {
+                Debug.LogWarning("[ShopLogic] Article draw failed: the selected tier has no drawable article or the tier probabilities are empty.");
                 return false;
             }
 

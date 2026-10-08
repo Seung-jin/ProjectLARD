@@ -5,6 +5,7 @@ namespace LARD.Player {
     public sealed class PlayerResource {
         public long Silver { get; private set; } = 100;
         public long Gold { get; private set; } = 10;
+        public event Action<ResourceType, long> BalanceChanged;
 
         public long Get(ResourceType type) {
             return type switch {
@@ -37,6 +38,10 @@ namespace LARD.Player {
         }
 
         private void Set(ResourceType type, long amount) {
+            if (Get(type) == amount) {
+                return;
+            }
+
             switch (type) {
                 case ResourceType.Silver:
                     Silver = amount;
@@ -47,6 +52,8 @@ namespace LARD.Player {
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
+
+            BalanceChanged?.Invoke(type, amount);
         }
     }
 }

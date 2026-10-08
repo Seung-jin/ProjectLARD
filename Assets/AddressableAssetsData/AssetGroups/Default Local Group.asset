@@ -87,6 +87,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - Upgrade
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7f8c988b5990ad946b6e4f969c481285
+    m_Address: UI/Prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 98cb5aad172e4ac2966e29408ccf572e
     m_Address: Data/Skill
     m_ReadOnly: 0

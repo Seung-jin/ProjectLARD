@@ -17,6 +17,7 @@ namespace LARD.Stage {
         private readonly float _formationGap;
         private readonly List<ArticleObj> _selectedArticles;
         private readonly Action<StageModel> _startStage;
+        private readonly Action<int> _stageTimeChanged;
         private readonly Action _completeVictory;
         private readonly Action _monsterDied;
         private readonly ArticleFactory _articleFactory = new();
@@ -31,11 +32,12 @@ namespace LARD.Stage {
         public ArticleFactory ArticleFactory => _articleFactory;
 
         public StageLogic(Map map, float formationGap, List<ArticleObj> selectedArticles, Action<StageModel> startStage,
-                          Action completeVictory, Action monsterDied) {
+                          Action<int> stageTimeChanged, Action completeVictory, Action monsterDied) {
             _map = map;
             _formationGap = formationGap;
             _selectedArticles = selectedArticles ?? throw new ArgumentNullException(nameof(selectedArticles));
             _startStage = startStage ?? throw new ArgumentNullException(nameof(startStage));
+            _stageTimeChanged = stageTimeChanged ?? throw new ArgumentNullException(nameof(stageTimeChanged));
             _completeVictory = completeVictory ?? throw new ArgumentNullException(nameof(completeVictory));
             _monsterDied = monsterDied ?? throw new ArgumentNullException(nameof(monsterDied));
         }
@@ -92,11 +94,11 @@ namespace LARD.Stage {
             return ShopLogic.TryDrawArticle(_map, _articleFactory, out article);
         }
 
-        public void OnTestDrawArticle() {
+        public void SummonArticle() {
             if (TryDrawArticle(out ArticleObj article)) {
-                Debug.Log($"[BattleInput] Drew article {article.Model.Id}, tier {article.Tier}.", article);
+                Debug.Log($"[Battle] Summoned article {article.Model.Id}, tier {article.Tier}.", article);
             } else {
-                Debug.LogWarning("[BattleInput] Article draw failed. Check Silver and loaded shop data.");
+                Debug.LogWarning("[Battle] Article summon failed. Check Silver and loaded shop data.");
             }
         }
 
@@ -189,7 +191,7 @@ namespace LARD.Stage {
                     _startStage(stage);
                     await UniTask.WhenAll(
                         SpawnMonstersAsync(stage, monsterModel, isFinalStage, stageToken),
-                        UniTask.Delay(TimeSpan.FromSeconds(stage.StageTime), cancellationToken: stageToken));
+                        RunStageTimerAsync(stage.StageTime, stageToken));
                 }
             } catch (OperationCanceledException) when (stageToken.IsCancellationRequested) {
                 // Victory or destruction ended the stage sequence.
@@ -197,6 +199,18 @@ namespace LARD.Stage {
                 if (_stageSequenceCancellation == cancellation) {
                     _stageSequenceCancellation = null;
                 }
+            }
+        }
+
+        private async UniTask RunStageTimerAsync(float duration, CancellationToken cancellationToken) {
+            int remainingSeconds = Mathf.CeilToInt(duration);
+            float nextInterval = duration - (remainingSeconds - 1);
+
+            while (remainingSeconds > 0) {
+                await UniTask.Delay(TimeSpan.FromSeconds(nextInterval), cancellationToken: cancellationToken);
+                remainingSeconds--;
+                _stageTimeChanged(remainingSeconds);
+                nextInterval = 1f;
             }
         }
 

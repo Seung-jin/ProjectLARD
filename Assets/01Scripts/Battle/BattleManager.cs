@@ -48,9 +48,9 @@ namespace LARD.Battle {
 
 			_input = GetComponent<GameInputController>();
 			_inputLogic = GetComponent<BattleInputLogic>();
-			_inputLogic.Initialize(this);
+			_inputLogic.Init(this);
 			_map ??= FindFirstObjectByType<Map>();
-			StageLogic.Initialize(_map, _formationGap, _selectedArticles, StartStage, SetRemainingStageSeconds, CompleteVictory,
+			StageLogic.Init(_map, _formationGap, _selectedArticles, StartStage, SetRemainingStageSeconds, CompleteVictory,
 			                      () => BattleObserver.TriggerEvent(BattleEventType.MonsterDied));
 			_articleLogic = new ArticleLogic(_selectedArticles, StageLogic.ArticleFactory);
 			_battleLogic = new BattleLogic(this);
@@ -102,10 +102,10 @@ namespace LARD.Battle {
 		private void StartStage(StageModel stage) {
 			CurrentStage = stage;
 			State = BattleStateType.Playing;
-			float stageTime = StageDataSet.GetStageTime();
+			float stageTime = stage.StageTime;
 			SetRemainingStageSeconds(Mathf.CeilToInt(stageTime));
 			StageChanged?.Invoke(stage);
-			Debug.Log($"[Battle] Stage {stage.Id} started ({stageTime} seconds, monster {stage.MonsterId} x{StageDataSet.GetMonsterCount()}).", this);
+			Debug.Log($"[Battle] Stage {stage.Id} started ({stageTime} seconds, monster {stage.MonsterId} x{stage.MonsterCount}).", this);
 		}
 
 		// 남은 시간 갱신

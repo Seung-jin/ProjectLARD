@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Article.ArticleModel
   Id: 6
   Race: 0
-  Tier: 2
-  AttackPower: 10
+  Tier: 3
+  AttackPower: 450
   AttackSpeed: 1
   MoveSpeed: 3
   Range: 5

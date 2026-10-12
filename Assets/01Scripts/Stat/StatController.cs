@@ -16,7 +16,7 @@ namespace LARD.Stat {
             CurrentHealth = _maxHealth;
         }
 
-        public void Initialize(float health, float defense, float moveSpeed) {
+        public void Init(float health, float defense, float moveSpeed) {
             _maxHealth = Mathf.Max(0f, health);
             _defense = Mathf.Clamp(defense, 0f, 100f);
             _moveSpeed = Mathf.Max(0f, moveSpeed);

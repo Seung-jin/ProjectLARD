@@ -18,7 +18,7 @@ namespace LARD.Skill {
                 _ => ScriptableObject.CreateInstance<SkillBase>(),
             };
             skill.SetFactory(this);
-            skill.Initialize(owner, model);
+            skill.Init(owner, model);
             return skill;
         }
 

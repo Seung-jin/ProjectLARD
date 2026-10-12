@@ -12,7 +12,7 @@ namespace LARD.Monster {
             _parent = parent;
         }
 
-        public MonsterObj Create(MonsterModel model, Map map, float healthOverride = 0f) {
+        public MonsterObj Create(MonsterModel model, Map map, float health) {
             if (model == null || model.Prefab == null) {
                 throw new ArgumentException("MonsterModel must reference a MonsterObj prefab.", nameof(model));
             }
@@ -28,7 +28,7 @@ namespace LARD.Monster {
 
             MonsterObj monster = pool.Get(map.MonsterSpawnPosition, Quaternion.identity);
             try {
-                monster.Initialize(model, map, healthOverride);
+                monster.Init(model, map, health);
                 return monster;
             } catch {
                 monster.Release();

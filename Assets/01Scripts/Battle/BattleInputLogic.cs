@@ -12,7 +12,7 @@ namespace LARD.Battle {
         private bool _isDragging;
         private readonly List<RaycastResult> _uiRaycastResults = new();
 
-        public void Initialize(BattleManager battleManager) {
+        public void Init(BattleManager battleManager) {
             _battleManager = battleManager;
         }
 

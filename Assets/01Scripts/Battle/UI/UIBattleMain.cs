@@ -16,11 +16,17 @@ namespace LARD.Battle {
 		[SerializeField] private TextMeshProUGUI _goldText;
 		[SerializeField] private Button _summonBtn;
 		[SerializeField] private UIArticleInfo _articleInfo;
+		[SerializeField] private SlotRaceUpgrade _yozUpgradeSlot;
+		[SerializeField] private SlotRaceUpgrade _sylinUpgradeSlot;
+		[SerializeField] private SlotRaceUpgrade _shushireUpgradeSlot;
 
 		public override void Init(UIType type) {
 			base.Init(type);
 			_summonBtn.onClick.AddListener(OnClickSummonBtn);
 			_articleInfo.Init(UIType.ArticleInfo);
+			_yozUpgradeSlot.Init(ArticleRace.Yoz);
+			_sylinUpgradeSlot.Init(ArticleRace.Sylin);
+			_shushireUpgradeSlot.Init(ArticleRace.Shushire);
 		}
 
 		public override void Show(params object[] args) {

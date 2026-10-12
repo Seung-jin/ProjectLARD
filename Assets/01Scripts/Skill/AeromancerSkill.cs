@@ -34,7 +34,7 @@ namespace LARD.Skill {
 
             Vector2 center = monster.transform.position;
             ObjSkillGround zone = Factory.SpawnObject(prefab, center, Quaternion.identity);
-            zone.InitializeCircle(center, GroundRadius, GroundLifetime, new Color(1f, 0.85f, 0.1f, 0.6f));
+            zone.InitCircle(center, GroundRadius, GroundLifetime, new Color(1f, 0.85f, 0.1f, 0.6f));
 
             int ownerId = Owner.Id;
             uint leaseId = zone.LeaseId;

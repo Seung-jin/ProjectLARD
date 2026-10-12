@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: ArticleTier2
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Article.ArticleTierModel
   Tier: 2
-  UpgradeCost: 0
-  UpgradeProbability: 0
+  UpgradeCost: 40
+  UpgradeProbability: 1
   SaleCost: 20

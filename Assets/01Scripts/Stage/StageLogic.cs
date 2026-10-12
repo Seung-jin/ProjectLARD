@@ -27,14 +27,14 @@ namespace LARD.Stage {
         private static CancellationTokenSource _stageSequenceCancellation;
         private static bool _finalStageSpawnsCompleted;
         private static bool _hasWon;
-        private static bool _initialized;
+        private static bool _init;
 
         public static ArticleFactory ArticleFactory => _articleFactory;
 
-        public static void Initialize(Map map, float formationGap, List<ArticleObj> selectedArticles,
+        public static void Init(Map map, float formationGap, List<ArticleObj> selectedArticles,
                                       Action<StageModel> startStage, Action<int> stageTimeChanged,
                                       Action completeVictory, Action monsterDied) {
-            if (_initialized) {
+            if (_init) {
                 Dispose();
             }
 
@@ -49,7 +49,7 @@ namespace LARD.Stage {
             _monsterFactory = new MonsterFactory();
             _finalStageSpawnsCompleted = false;
             _hasWon = false;
-            _initialized = true;
+            _init = true;
         }
 
         public static void Select(ArticleObj article) {
@@ -67,7 +67,7 @@ namespace LARD.Stage {
         }
 
         public static void SelectAt(Vector2 position) {
-            if (!_initialized) {
+            if (!_init) {
                 return;
             }
 
@@ -88,7 +88,7 @@ namespace LARD.Stage {
         }
 
         public static void SelectArea(Vector2 start, Vector2 end) {
-            if (!_initialized) {
+            if (!_init) {
                 return;
             }
 
@@ -110,7 +110,7 @@ namespace LARD.Stage {
 
         public static bool TrySummonArticle(int articleId, out ArticleObj article) {
             article = null;
-            if (!_initialized || _map == null || _articleFactory == null) {
+            if (!_init || _map == null || _articleFactory == null) {
                 Debug.LogWarning("[StageLogic] Article summon failed: stage is not initialized or Map is missing.");
                 return false;
             }
@@ -256,7 +256,7 @@ namespace LARD.Stage {
         }
 
         public static void MoveSelectedArticles(Vector2 destination) {
-            if (!_initialized) {
+            if (!_init) {
                 return;
             }
 
@@ -309,7 +309,7 @@ namespace LARD.Stage {
         }
 
         public static async UniTask RunAsync(CancellationToken cancellationToken) {
-            if (!_initialized) {
+            if (!_init) {
                 throw new InvalidOperationException("StageLogic is not initialized.");
             }
 
@@ -329,14 +329,18 @@ namespace LARD.Stage {
                         return;
                     }
 
-                    float stageTime = StageDataSet.GetStageTime();
+                    float stageTime = stage.StageTime;
                     if (stageTime <= 0f) {
-                        Debug.LogError($"[Battle] Stage constants have invalid duration: {stageTime} seconds.");
+                        Debug.LogError($"[Battle] Stage {stageId} has invalid duration: {stageTime} seconds.");
                         return;
                     }
-                    int monsterCount = StageDataSet.GetMonsterCount();
+                    int monsterCount = stage.MonsterCount;
                     if (monsterCount <= 0) {
-                        Debug.LogError($"[Battle] Stage constants have invalid monster count: {monsterCount}.");
+                        Debug.LogError($"[Battle] Stage {stageId} has invalid monster count: {monsterCount}.");
+                        return;
+                    }
+                    if (stage.MonsterHealth <= 0f) {
+                        Debug.LogError($"[Battle] Stage {stageId} has invalid monster health: {stage.MonsterHealth}.");
                         return;
                     }
                     if (_map == null) {
@@ -348,12 +352,24 @@ namespace LARD.Stage {
                         Debug.LogError($"[Battle] Stage {stageId} has no spawnable monster for ID {stage.MonsterId}.");
                         return;
                     }
+                    MonsterModel bossModel = null;
+                    if (stage.BossMonsterId != 0) {
+                        if (stage.BossMonsterHealth <= 0f) {
+                            Debug.LogError($"[Battle] Stage {stageId} has invalid boss health: {stage.BossMonsterHealth}.");
+                            return;
+                        }
+                        bossModel = MonsterDataSet.GetModel(stage.BossMonsterId);
+                        if (bossModel == null || bossModel.Prefab == null) {
+                            Debug.LogError($"[Battle] Stage {stageId} has no spawnable boss for ID {stage.BossMonsterId}.");
+                            return;
+                        }
+                    }
 
                     _finalStageSpawnsCompleted = false;
                     bool isFinalStage = StageDataSet.GetModel(stageId + 1) == null;
                     _startStage(stage);
                     await UniTask.WhenAll(
-                        SpawnMonstersAsync(stage, monsterModel, monsterCount, isFinalStage, stageToken),
+                        SpawnMonstersAsync(stage, monsterModel, bossModel, isFinalStage, stageToken),
                         RunStageTimerAsync(stageTime, stageToken));
                 }
             } catch (OperationCanceledException) when (stageToken.IsCancellationRequested) {
@@ -377,24 +393,32 @@ namespace LARD.Stage {
             }
         }
 
-        private static async UniTask SpawnMonstersAsync(StageModel stage, MonsterModel model, int monsterCount, bool isFinalStage, CancellationToken cancellationToken) {
-            for (int i = 0; i < monsterCount; i++) {
+        private static async UniTask SpawnMonstersAsync(StageModel stage, MonsterModel model, MonsterModel bossModel, bool isFinalStage, CancellationToken cancellationToken) {
+            for (int i = 0; i < stage.MonsterCount; i++) {
                 cancellationToken.ThrowIfCancellationRequested();
-                MonsterObj monster = _monsterFactory.Create(model, _map, stage.MonsterHealth);
-                if (monster.IsAlive) {
-                    monster.MonsterObserver.AddListener(MonsterEventType.Died, OnMonsterDied);
-                    monster.Released += OnMonsterReleased;
-                    _aliveMonsters.Add(monster);
-                }
+                SpawnMonster(model, stage.MonsterHealth);
 
-                if (i + 1 < monsterCount) {
+                if (i + 1 < stage.MonsterCount || bossModel != null) {
                     await UniTask.Delay(MonsterSpawnInterval, cancellationToken: cancellationToken);
                 }
+            }
+            if (bossModel != null) {
+                cancellationToken.ThrowIfCancellationRequested();
+                SpawnMonster(bossModel, stage.BossMonsterHealth);
             }
 
             if (isFinalStage) {
                 _finalStageSpawnsCompleted = true;
                 TryCompleteVictory();
+            }
+        }
+
+        private static void SpawnMonster(MonsterModel model, float health) {
+            MonsterObj monster = _monsterFactory.Create(model, _map, health);
+            if (monster.IsAlive) {
+                monster.MonsterObserver.AddListener(MonsterEventType.Died, OnMonsterDied);
+                monster.Released += OnMonsterReleased;
+                _aliveMonsters.Add(monster);
             }
         }
 
@@ -408,7 +432,7 @@ namespace LARD.Stage {
         private static void OnMonsterDied() => _monsterDied?.Invoke();
 
         private static void TryCompleteVictory() {
-            if (!_initialized || _hasWon || !_finalStageSpawnsCompleted || AliveMonsterCount != 0) {
+            if (!_init || _hasWon || !_finalStageSpawnsCompleted || AliveMonsterCount != 0) {
                 return;
             }
 
@@ -418,11 +442,11 @@ namespace LARD.Stage {
         }
 
         public static void Dispose() {
-            if (!_initialized) {
+            if (!_init) {
                 return;
             }
 
-            _initialized = false;
+            _init = false;
             _stageSequenceCancellation?.Cancel();
             foreach (MonsterObj monster in _aliveMonsters) {
                 if (monster != null) {

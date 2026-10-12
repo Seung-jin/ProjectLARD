@@ -38,7 +38,7 @@ namespace LARD.Article {
 
             ArticleObj article = pool.Get(position, rotation);
             try {
-                article.Initialize(model, Counter.Next(CounterKey), tier);
+                article.Init(model, Counter.Next(CounterKey), tier);
                 if (model.Skill != null) {
                     article.SkillController.SetSkill(model.Skill, _skillFactory.Create(model.Skill, article));
                 }

@@ -39,7 +39,7 @@ namespace LARD.Skill {
                                  direction * (StartOffset + GroundLength * 0.5f);
                 ObjSkillGround zone = Factory.SpawnObject(prefab, center,
                     Quaternion.FromToRotation(Vector3.right, direction));
-                zone.Initialize(center, direction, GroundLength, width, GroundLifetime, Color.white);
+                zone.Init(center, direction, GroundLength, width, GroundLifetime, Color.white);
                 int ownerId = Owner.Id;
                 HashSet<int> hitMonsterIds = new();
                 zone.Entered += other => OnGroundEnter(other, ownerId, hitMonsterIds);

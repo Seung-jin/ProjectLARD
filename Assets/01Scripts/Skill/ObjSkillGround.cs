@@ -14,7 +14,7 @@ namespace LARD.Skill {
         private float _nextTickAt;
         private int _ticksRemaining;
 
-        public virtual void Initialize(Vector2 center, Vector2 direction, float length, float width,
+        public virtual void Init(Vector2 center, Vector2 direction, float length, float width,
                                        float lifetime, Color color, int sortingOrder = -19) {
             ResetLifetime(lifetime);
             transform.position = center;
@@ -30,7 +30,7 @@ namespace LARD.Skill {
             renderer.sortingOrder = sortingOrder;
         }
 
-        public virtual void InitializeCircle(Vector2 center, float radius, float lifetime,
+        public virtual void InitCircle(Vector2 center, float radius, float lifetime,
                                              Color color, int sortingOrder = -19) {
             ResetLifetime(lifetime);
             transform.position = center;

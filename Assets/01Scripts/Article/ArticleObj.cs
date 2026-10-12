@@ -32,7 +32,7 @@ namespace LARD.Article {
             }
         }
 
-        internal void Initialize(ArticleModel model, int id, int tier) {
+        internal void Init(ArticleModel model, int id, int tier) {
             Model = model;
             Id = id;
             Tier = tier;

@@ -66,6 +66,10 @@ namespace LARD.Article {
 			if (asset is not ArticleModel articleModel) {
 				return;
 			}
+			// Temporarily limit draws and promotions to Yoz for balance testing.
+			if (articleModel.Race != ArticleRace.Yoz) {
+				return;
+			}
 
 			if (!_models.TryAdd(articleModel.Id, articleModel)) {
 				Debug.LogError($"ArticleModel ID가 중복되었습니다: {articleModel.Id} ({articleModel.name})");

@@ -53,20 +53,18 @@ namespace LARD.Monster {
             _moveComponent ??= GetComponent<MoveComponentMonsterPath>();
         }
 
-        private void Start() {
-            if (_map == null) {
-                Initialize(_model, FindFirstObjectByType<Map>());
+        public void Init(MonsterModel model, Map map, float health) {
+            if (health <= 0f) {
+                throw new ArgumentOutOfRangeException(nameof(health), "Monster health must be positive.");
             }
-        }
 
-        public void Initialize(MonsterModel model, Map map, float healthOverride = 0f) {
             EffectController.Clear();
             Id = Counter.Next(CounterKey);
             _model = model;
             _map = map;
 
             if (model != null) {
-                _statController.Initialize(healthOverride > 0f ? healthOverride : model.Health,
+                _statController.Init(health,
                                            model.Defense, model.MoveSpeed);
                 _moveComponent.SetMoveSpeed(_statController.MoveSpeed);
                 MonsterObserver.TriggerEvent(MonsterEventType.HealthChanged);

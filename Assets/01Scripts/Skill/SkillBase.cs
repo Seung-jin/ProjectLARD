@@ -18,7 +18,7 @@ namespace LARD.Skill {
             Factory = factory;
         }
 
-        public virtual void Initialize(ArticleObj owner, SkillModel model) {
+        public virtual void Init(ArticleObj owner, SkillModel model) {
             Owner = owner;
             Model = model;
         }

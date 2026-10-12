@@ -5,6 +5,7 @@ using LARD.Skill;
 using UnityEngine;
 
 namespace LARD.Article {
+    // 기물의 스킬 사용과 공격 주기 관리
     public sealed class SkillController : MonoBehaviour {
         private CancellationTokenSource _attackLoopCancellation;
         private CancellationTokenSource _skillUseCancellation;
@@ -37,6 +38,7 @@ namespace LARD.Article {
         public void ClearSkill() {
             StopAttackLoop();
             if (Skill != null) {
+                Skill.Cleanup();
                 Destroy(Skill);
             }
 

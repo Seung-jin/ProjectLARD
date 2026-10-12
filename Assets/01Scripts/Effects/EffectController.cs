@@ -1,6 +1,7 @@
 using UnityEngine;
 
 namespace LARD.Effects {
+    // 전투 효과 관리
     public sealed class EffectController {
         private float _damageTakenIncreasePercent;
         private float _damageTakenIncreaseUntil;
@@ -12,6 +13,7 @@ namespace LARD.Effects {
         public float MoveSpeedDecreasePercent => Time.time < _moveSpeedDecreaseUntil
             ? _moveSpeedDecreasePercent : 0f;
 
+        // 받는 피해 증가 적용
         public void ApplyDamageTakenIncrease(float percent, float durationSeconds) {
             if (percent <= 0f || durationSeconds <= 0f) {
                 return;
@@ -22,6 +24,7 @@ namespace LARD.Effects {
             _damageTakenIncreaseUntil = Mathf.Max(_damageTakenIncreaseUntil, Time.time + durationSeconds);
         }
 
+        // 이동 속도 감소 적용
         public void ApplyMoveSpeedDecrease(float percent, float durationSeconds) {
             if (percent <= 0f || durationSeconds <= 0f) {
                 return;
@@ -32,6 +35,7 @@ namespace LARD.Effects {
             _moveSpeedDecreaseUntil = Mathf.Max(_moveSpeedDecreaseUntil, Time.time + durationSeconds);
         }
 
+        // 효과 초기화
         public void Clear() {
             _damageTakenIncreasePercent = 0f;
             _damageTakenIncreaseUntil = 0f;

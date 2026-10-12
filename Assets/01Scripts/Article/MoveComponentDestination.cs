@@ -1,6 +1,7 @@
 using UnityEngine;
 
 namespace LARD.Article {
+    // 기물의 목적지 이동 관리
     public sealed class MoveComponentDestination : MoveComponent {
         [SerializeField, Min(0f)] private float _arrivalDistance = 0.05f;
 

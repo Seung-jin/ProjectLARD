@@ -20,6 +20,11 @@ namespace LARD.Shop {
 
 			if (assets == null) {
 				Debug.LogError($"ShopDataSet load failed. Addressable label: {AddressableLabel}");
+				return;
+			}
+
+			foreach (ShopProbModel probabilities in _probabilities.Values) {
+				probabilities.BuildDrawTable();
 			}
 		}
 

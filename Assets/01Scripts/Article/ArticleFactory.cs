@@ -21,15 +21,7 @@ namespace LARD.Article {
             return Create(model, model != null ? model.Tier : 0, position, rotation);
         }
 
-        public ArticleObj Create(ArticleTierModel tierModel, Vector3 position, Quaternion rotation) {
-            if (tierModel == null || tierModel.Article == null) {
-                throw new ArgumentException("ArticleTierModel must reference an ArticleModel.", nameof(tierModel));
-            }
-
-            return Create(tierModel.Article, tierModel.Tier, position, rotation);
-        }
-
-        private ArticleObj Create(ArticleModel model, int tier, Vector3 position, Quaternion rotation) {
+        public ArticleObj Create(ArticleModel model, int tier, Vector3 position, Quaternion rotation) {
             if (model == null || model.Prefab == null) {
                 throw new ArgumentException("ArticleModel must reference an ArticleObj prefab.", nameof(model));
             }

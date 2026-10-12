@@ -9,6 +9,7 @@ namespace LARD.Article {
 		Shushire,
 	}
 
+	// 기물의 기본 능력치와 스킬 데이터
 	[CreateAssetMenu(fileName = "ArticleModel", menuName = "Data/Article/Model")]
 	public sealed class ArticleModel : ScriptableObject {
 		public int Id;

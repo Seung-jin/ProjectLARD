@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using LARD.Article;
-using LARD.Battle.UI;
 using LARD.Data;
 using LARD.Stage;
 using LARD.Upgrade;
@@ -22,11 +21,13 @@ namespace LARD.Battle {
 		private readonly List<ArticleObj> _selectedArticles = new();
 		private GameInputController _input;
 		private BattleInputLogic _inputLogic;
-		private StageLogic _stageLogic;
 		private ArticleLogic _articleLogic;
 		private BattleLogic _battleLogic;
 
 		public IReadOnlyList<ArticleObj> SelectedArticles => _selectedArticles;
+		public ArticleObj SelectedArticle => _selectedArticles.Count == 1 && _selectedArticles[0] != null &&
+		                                    _selectedArticles[0].gameObject.activeInHierarchy && !_selectedArticles[0].IsInPool
+			? _selectedArticles[0] : null;
 		public Observer<BattleEventType> BattleObserver { get; } = new();
 		public int MonsterKillCount { get; private set; }
 		public StageModel CurrentStage { get; private set; }
@@ -34,9 +35,11 @@ namespace LARD.Battle {
 		public BattleStateType State { get; private set; } = BattleStateType.Preparing;
 		public event Action<StageModel> StageChanged;
 		public event Action<int> StageTimeChanged;
+		public event Action<ArticleObj> SelectionChanged;
 		public event Action VictoryAchieved;
-		public int AliveMonsterCount => _stageLogic?.AliveMonsterCount ?? 0;
+		public int AliveMonsterCount => StageLogic.AliveMonsterCount;
 
+		// 전투 로직 초기화
 		protected override void Awake() {
 			base.Awake();
 			if (Instance != this) {
@@ -47,12 +50,13 @@ namespace LARD.Battle {
 			_inputLogic = GetComponent<BattleInputLogic>();
 			_inputLogic.Initialize(this);
 			_map ??= FindFirstObjectByType<Map>();
-			_stageLogic = new StageLogic(_map, _formationGap, _selectedArticles, StartStage, SetRemainingStageSeconds, CompleteVictory,
-			                            () => BattleObserver.TriggerEvent(BattleEventType.MonsterDied));
-			_articleLogic = new ArticleLogic(_selectedArticles, _stageLogic.ArticleFactory);
+			StageLogic.Initialize(_map, _formationGap, _selectedArticles, StartStage, SetRemainingStageSeconds, CompleteVictory,
+			                      () => BattleObserver.TriggerEvent(BattleEventType.MonsterDied));
+			_articleLogic = new ArticleLogic(_selectedArticles, StageLogic.ArticleFactory);
 			_battleLogic = new BattleLogic(this);
 		}
 
+		// 전투 시작
 		private void Start() {
 			if (Instance != this) {
 				return;
@@ -62,6 +66,7 @@ namespace LARD.Battle {
 			StartStagesAsync().Forget();
 		}
 
+		// 전투 준비 및 스테이지 진행
 		private async UniTask StartStagesAsync() {
 			var cancellationToken = this.GetCancellationTokenOnDestroy();
 			try {
@@ -87,25 +92,29 @@ namespace LARD.Battle {
 				if (cancellationToken.IsCancellationRequested) {
 					return;
 				}
-				await _stageLogic.RunAsync(cancellationToken);
+			await StageLogic.RunAsync(cancellationToken);
 			} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
 				// The battle object was destroyed while loading its data.
 			}
 		}
 
+		// 스테이지 시작 처리
 		private void StartStage(StageModel stage) {
 			CurrentStage = stage;
 			State = BattleStateType.Playing;
-			SetRemainingStageSeconds(Mathf.CeilToInt(stage.StageTime));
+			float stageTime = StageDataSet.GetStageTime();
+			SetRemainingStageSeconds(Mathf.CeilToInt(stageTime));
 			StageChanged?.Invoke(stage);
-			Debug.Log($"[Battle] Stage {stage.Id} started ({stage.StageTime} seconds, monster {stage.MonsterId} x{stage.MonsterCount}).", this);
+			Debug.Log($"[Battle] Stage {stage.Id} started ({stageTime} seconds, monster {stage.MonsterId} x{StageDataSet.GetMonsterCount()}).", this);
 		}
 
+		// 남은 시간 갱신
 		private void SetRemainingStageSeconds(int remainingSeconds) {
 			RemainingStageSeconds = remainingSeconds;
 			StageTimeChanged?.Invoke(remainingSeconds);
 		}
 
+		// 승리 처리 진행
 		private void CompleteVictory() {
 			State = BattleStateType.Victory;
 			SetRemainingStageSeconds(0);
@@ -113,6 +122,7 @@ namespace LARD.Battle {
 			VictoryAchieved?.Invoke();
 		}
 
+		// 전투 입력 등록
 		private void OnEnable() {
 			if (Instance != this) {
 				return;
@@ -121,12 +131,12 @@ namespace LARD.Battle {
 			_input.AddSelectPressedListener(_inputLogic.OnSelectPressed);
 			_input.AddSelectReleasedListener(_inputLogic.OnSelectReleased);
 			_input.AddMoveListener(_inputLogic.OnMoveCommand);
-			_input.AddDrawArticleListener(SummonArticle);
 			_input.AddUpgradeArticleListener(OnTestUpgradeSelectedArticle);
 			_input.AddUpgradeYozListener(OnTestUpgradeYoz);
 			Debug.Log("[BattleInput] BattleManager registered input listeners.", this);
 		}
 
+		// 전투 입력 해제
 		private void OnDisable() {
 			if (Instance != this) {
 				return;
@@ -135,48 +145,51 @@ namespace LARD.Battle {
 			_input.RemoveSelectPressedListener(_inputLogic.OnSelectPressed);
 			_input.RemoveSelectReleasedListener(_inputLogic.OnSelectReleased);
 			_input.RemoveMoveListener(_inputLogic.OnMoveCommand);
-			_input.RemoveDrawArticleListener(SummonArticle);
 			_input.RemoveUpgradeArticleListener(OnTestUpgradeSelectedArticle);
 			_input.RemoveUpgradeYozListener(OnTestUpgradeYoz);
 			_inputLogic.CancelDrag();
 		}
 
+		// 전투 리소스 정리
 		protected override void OnDestroy() {
 			if (_battleLogic != null) {
 				BattleObserver.RemoveListener(BattleEventType.MonsterDied, _battleLogic.OnMonsterDied);
 			}
-			_stageLogic?.Dispose();
+			if (Instance == this) {
+				StageLogic.Dispose();
+			}
 			base.OnDestroy();
 		}
 
+		// 몬스터 처치 수 갱신
 		internal int RegisterMonsterKill() => ++MonsterKillCount;
 
-		public void SummonArticle() {
-			_stageLogic.SummonArticle();
-		}
-
+		// 위치의 유닛 선택
 		public void SelectAt(Vector2 position) {
-			_stageLogic.SelectAt(position);
+			StageLogic.SelectAt(position);
+			SelectionChanged?.Invoke(SelectedArticle);
 		}
 
+		// 범위의 유닛 선택
 		public void SelectArea(Vector2 start, Vector2 end) {
-			_stageLogic.SelectArea(start, end);
+			StageLogic.SelectArea(start, end);
+			SelectionChanged?.Invoke(SelectedArticle);
 		}
 
+		// 선택 유닛 이동
 		public void MoveSelectedArticles(Vector2 destination) {
-			_stageLogic.MoveSelectedArticles(destination);
+			StageLogic.MoveSelectedArticles(destination);
 		}
 
+		// 선택 유닛 강화 시도
 		public bool TryUpgradeSelectedArticle() {
-			return _articleLogic.TryUpgradeSelectedArticle();
+			bool upgraded = _articleLogic.TryUpgradeSelectedArticle();
+			SelectionChanged?.Invoke(SelectedArticle);
+			return upgraded;
 		}
 
 		private void OnTestUpgradeSelectedArticle() {
-			if (TryUpgradeSelectedArticle()) {
-				Debug.Log($"[BattleInput] Upgraded selected article to tier {_selectedArticles[0].Tier}.", _selectedArticles[0]);
-			} else {
-				Debug.LogWarning("[BattleInput] Article upgrade failed. Check selection, Silver, tier data, and upgrade chance.", this);
-			}
+			TryUpgradeSelectedArticle();
 		}
 
 		private void OnTestUpgradeYoz() {

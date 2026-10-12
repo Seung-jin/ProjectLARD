@@ -1,15 +1,18 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace LARD.Article {
+    // 기물 상태와 구성 요소 관리
     [RequireComponent(typeof(Rigidbody2D), typeof(CapsuleCollider2D))]
-    [RequireComponent(typeof(SkillController), typeof(GraphicController))]
+    [RequireComponent(typeof(SkillController))]
     public class ArticleObj : PoolingObject<ArticleObj> {
+        [ShowInInspector] public int Id { get; private set; }
+
         [SerializeField] private GraphicController _graphicController;
         [SerializeField] private MoveComponent _moveComponent;
         [SerializeField] private SkillController _skillController;
         [SerializeField] private UIArticleObj _uiArticleObj;
 
-        public int Id { get; private set; }
         public int Tier { get; private set; }
         public ArticleModel Model { get; private set; }
         public MoveComponent MoveComponent => _moveComponent;
@@ -19,8 +22,14 @@ namespace LARD.Article {
         private void Awake() {
             _moveComponent ??= GetComponent<MoveComponent>();
             _skillController ??= GetComponent<SkillController>();
-            _graphicController ??= GetComponent<GraphicController>();
+            _graphicController ??= GetComponentInChildren<GraphicController>(true);
             _uiArticleObj ??= GetComponentInChildren<UIArticleObj>(true);
+        }
+
+        private void LateUpdate() {
+            if (_moveComponent != null && _graphicController != null) {
+                _graphicController.FaceDirection(_moveComponent.MovementDirection);
+            }
         }
 
         internal void Initialize(ArticleModel model, int id, int tier) {
@@ -28,6 +37,7 @@ namespace LARD.Article {
             Id = id;
             Tier = tier;
             _moveComponent?.SetMoveSpeed(model.MoveSpeed);
+            _graphicController?.ResetFacing();
             _uiArticleObj?.SetInfo(model.Race, tier);
         }
 

@@ -10,6 +10,7 @@ namespace LSJ.UI {
 		// Battle
 		Battle,
 		Shop,
+		ArticleInfo,
 	}
 
 	public class UIManager : Singleton<UIManager> {

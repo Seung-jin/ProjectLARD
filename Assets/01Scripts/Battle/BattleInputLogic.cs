@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace LARD.Battle {
     public sealed class BattleInputLogic : MonoBehaviour {
@@ -8,12 +10,18 @@ namespace LARD.Battle {
         private BattleManager _battleManager;
         private Vector2 _dragStart;
         private bool _isDragging;
+        private readonly List<RaycastResult> _uiRaycastResults = new();
 
         public void Initialize(BattleManager battleManager) {
             _battleManager = battleManager;
         }
 
         public void OnSelectPressed(Vector2 screenPosition) {
+            if (IsOverUI(screenPosition)) {
+                _isDragging = false;
+                return;
+            }
+
             _dragStart = screenPosition;
             _isDragging = true;
             Debug.Log($"[BattleInput] Selection started at screen {screenPosition}.", this);
@@ -21,7 +29,6 @@ namespace LARD.Battle {
 
         public void OnSelectReleased(Vector2 screenPosition) {
             if (!_isDragging || _battleManager == null) {
-                Debug.LogWarning($"[BattleInput] Selection release ignored. Drag active: {_isDragging}, manager present: {_battleManager != null}", this);
                 return;
             }
 
@@ -48,6 +55,17 @@ namespace LARD.Battle {
 
         public void CancelDrag() {
             _isDragging = false;
+        }
+
+        private bool IsOverUI(Vector2 screenPosition) {
+            EventSystem eventSystem = EventSystem.current;
+            if (eventSystem == null) {
+                return false;
+            }
+
+            _uiRaycastResults.Clear();
+            eventSystem.RaycastAll(new PointerEventData(eventSystem) { position = screenPosition }, _uiRaycastResults);
+            return _uiRaycastResults.Count > 0;
         }
 
         private bool TryScreenToWorld(Vector2 screenPosition, out Vector2 worldPosition) {

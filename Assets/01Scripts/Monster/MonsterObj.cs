@@ -59,14 +59,15 @@ namespace LARD.Monster {
             }
         }
 
-        public void Initialize(MonsterModel model, Map map) {
+        public void Initialize(MonsterModel model, Map map, float healthOverride = 0f) {
             EffectController.Clear();
             Id = Counter.Next(CounterKey);
             _model = model;
             _map = map;
 
             if (model != null) {
-                _statController.Initialize(model.Health, model.Defense, model.MoveSpeed);
+                _statController.Initialize(healthOverride > 0f ? healthOverride : model.Health,
+                                           model.Defense, model.MoveSpeed);
                 _moveComponent.SetMoveSpeed(_statController.MoveSpeed);
                 MonsterObserver.TriggerEvent(MonsterEventType.HealthChanged);
             }

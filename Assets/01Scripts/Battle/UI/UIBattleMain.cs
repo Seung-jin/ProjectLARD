@@ -1,22 +1,26 @@
 ﻿using LSJ.UI;
+using LARD.Article;
 using LARD.Player;
 using LARD.Stat;
 using TMPro;
 using LARD.Stage;
+using LARD.Shop;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace LARD.Battle.UI {
+namespace LARD.Battle {
 	public class UIBattleMain : UIBase {
 		[SerializeField] private TextMeshProUGUI _stageText;
 		[SerializeField] private TextMeshProUGUI _timeText;
 		[SerializeField] private TextMeshProUGUI _silverText;
 		[SerializeField] private TextMeshProUGUI _goldText;
 		[SerializeField] private Button _summonBtn;
+		[SerializeField] private UIArticleInfo _articleInfo;
 
 		public override void Init(UIType type) {
 			base.Init(type);
 			_summonBtn.onClick.AddListener(OnClickSummonBtn);
+			_articleInfo.Init(UIType.ArticleInfo);
 		}
 
 		public override void Show(params object[] args) {
@@ -34,13 +38,16 @@ namespace LARD.Battle.UI {
 
 			BattleManager.Instance.StageChanged += UpdateStage;
 			BattleManager.Instance.StageTimeChanged += UpdateTime;
+			BattleManager.Instance.SelectionChanged += UpdateArticleInfo;
 			UpdateStage(BattleManager.Instance.CurrentStage);
 			UpdateTime(BattleManager.Instance.RemainingStageSeconds);
+			UpdateArticleInfo(BattleManager.Instance.SelectedArticle);
 		}
 
 		public override void Hide() {
 			UnbindBattleManager();
 			UnbindResource();
+			_articleInfo.Hide();
 			base.Hide();
 		}
 
@@ -78,6 +85,15 @@ namespace LARD.Battle.UI {
 
 			BattleManager.Instance.StageChanged -= UpdateStage;
 			BattleManager.Instance.StageTimeChanged -= UpdateTime;
+			BattleManager.Instance.SelectionChanged -= UpdateArticleInfo;
+		}
+
+		private void UpdateArticleInfo(ArticleObj article) {
+			if (article == null) {
+				_articleInfo.Hide();
+			} else {
+				_articleInfo.Show(UIArticleInfo.MakeParam(article));
+			}
 		}
 
 		private void UpdateStage(StageModel stage) {
@@ -94,7 +110,7 @@ namespace LARD.Battle.UI {
 				return;
 			}
 
-			BattleManager.Instance.SummonArticle();
+			ShopLogic.TryPickAndSummonArticle();
 		}
 	}
 }

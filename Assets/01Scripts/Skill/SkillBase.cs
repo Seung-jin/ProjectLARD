@@ -23,6 +23,8 @@ namespace LARD.Skill {
             Model = model;
         }
 
+        public virtual void Cleanup() { }
+
         public virtual UniTask<bool> TryUseAsync(CancellationToken cancellationToken) {
             cancellationToken.ThrowIfCancellationRequested();
             return UniTask.FromResult(TryUse());

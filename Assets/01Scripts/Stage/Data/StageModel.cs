@@ -5,7 +5,6 @@ namespace LARD.Stage {
     public sealed class StageModel : ScriptableObject {
         [Min(1)] public int Id = 1;
         [Min(1)] public int MonsterId = 1;
-        [Min(0)] public int MonsterCount;
-        [Min(0f)] public float StageTime;
+        [Min(0f), Tooltip("0 uses the MonsterModel health.")] public float MonsterHealth;
     }
 }

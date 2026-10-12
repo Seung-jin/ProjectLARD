@@ -87,7 +87,7 @@ namespace LARD.Skill {
             }
         }
 
-        private void OnDisable() {
+        public override void Cleanup() {
             foreach (GroundLease lease in _zones) {
                 if (lease.Zone != null && !lease.Zone.IsInPool && lease.Zone.LeaseId == lease.LeaseId) {
                     lease.Zone.Release();
@@ -95,5 +95,7 @@ namespace LARD.Skill {
             }
             _zones.Clear();
         }
+
+        private void OnDisable() => Cleanup();
     }
 }

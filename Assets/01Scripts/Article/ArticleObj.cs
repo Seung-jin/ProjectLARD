@@ -1,5 +1,6 @@
 using Sirenix.OdinInspector;
 using UnityEngine;
+using LARD.Effects;
 
 namespace LARD.Article {
     // 기물 상태와 구성 요소 관리
@@ -14,6 +15,7 @@ namespace LARD.Article {
         [SerializeField] private UIArticleObj _uiArticleObj;
 
         public int Tier { get; private set; }
+        public EffectController EffectController { get; } = new();
         public ArticleModel Model { get; private set; }
         public MoveComponent MoveComponent => _moveComponent;
         public SkillController SkillController => _skillController;
@@ -33,6 +35,7 @@ namespace LARD.Article {
         }
 
         internal void Init(ArticleModel model, int id, int tier) {
+            EffectController.Clear();
             Model = model;
             Id = id;
             Tier = tier;
@@ -42,6 +45,7 @@ namespace LARD.Article {
         }
 
         public override void OnReleaseToPool() {
+            EffectController.Clear();
             if (_moveComponent != null) {
                 _moveComponent.Stop();
             }

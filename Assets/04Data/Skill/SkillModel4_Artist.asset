@@ -14,18 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Skill.SkillModel
   Id: 4
   SkillObjectPrefab: {fileID: 100003, guid: fbd1860582df4ba691ac06c827ebbfbf, type: 3}
+  Damage: 550
   Effects:
   - Target: 2
     Effect: 0
     Timing: 2
-    AttackPowerRatio: 1.1
     HitCount: 1
     DurationSeconds: 0
     ValuePercent: 0
   - Target: 1
-    Effect: 1
+    Effect: 3
     Timing: 1
-    AttackPowerRatio: 0
     HitCount: 1
     DurationSeconds: 3
     ValuePercent: 5

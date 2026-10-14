@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using LARD.Article;
+using LARD.Battle;
 using LARD.Monster;
 using LARD.Player;
 using LARD.Shop;
@@ -11,6 +12,7 @@ namespace LARD.Data {
     public static class DataManager {
         private static readonly List<IDataSet> _dataSets = new() {
             new ArticleDataSet(),
+            new BattleDataSet(),
             new MonsterDataSet(),
             new StageDataSet(),
             new ShopDataSet(),

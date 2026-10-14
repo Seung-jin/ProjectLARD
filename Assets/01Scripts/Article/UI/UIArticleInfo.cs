@@ -10,6 +10,8 @@ namespace LARD.Article {
 	public class UIArticleInfo : UIBase {
 		[SerializeField] private TextMeshProUGUI _promotionCostText;
 		[SerializeField] private Button _promotionBtn;
+		[SerializeField] private TextMeshProUGUI _saleCostText;
+		[SerializeField] private Button _saleBtn;
 
 		private ArticleObj _article;
 
@@ -17,6 +19,7 @@ namespace LARD.Article {
 			base.Init(type);
 
 			_promotionBtn.onClick.AddListener(OnClickPromotionBtn);
+			_saleBtn.onClick.AddListener(OnClickSaleBtn);
 		}
 
 		public override void Show(params object[] args) {
@@ -30,6 +33,7 @@ namespace LARD.Article {
 
 			BuildArticleInfo();
 			BuildPromotion();
+			BuildSale();
 		}
 
 		public override void Hide() {
@@ -63,6 +67,24 @@ namespace LARD.Article {
 		private void OnClickPromotionBtn() {
 			if (BattleManager.Instance != null) {
 				BattleManager.Instance.TryUpgradeSelectedArticle();
+			}
+		}
+
+		private void BuildSale() {
+			if (!ArticleLogic.TryGetSaleCost(_article, out int cost)) {
+				_saleCostText.text = "NO SALE";
+				_saleBtn.interactable = false;
+				return;
+			}
+
+			_saleCostText.text = $"SELL FOR {cost:N0} SILVER";
+			_saleBtn.interactable = PlayerDataSet.Resource != null;
+		}
+
+		private void OnClickSaleBtn() {
+			BattleManager manager = BattleManager.Instance;
+			if (manager != null && manager.SelectedArticle == _article) {
+				manager.TrySellSelectedArticle();
 			}
 		}
 

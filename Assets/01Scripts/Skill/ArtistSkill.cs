@@ -22,9 +22,12 @@ namespace LARD.Skill {
         }
 
         public override bool TryUse() {
-            if (Owner == null || Owner.Model == null || Model == null || Model.Effects == null ||
-                Model.SkillObjectPrefab is not ObjSkillGround prefab || Factory == null) {
+            if (Owner == null || Owner.Model == null || Model == null || Model.Effects == null) {
                 return false;
+            }
+            // Sorceress tier 3 still uses its existing direct attack.
+            if (Model.SkillObjectPrefab is not ObjSkillGround prefab || Factory == null) {
+                return base.TryUse();
             }
 
             foreach (IAttackTarget candidate in FindTargetUtil.FindTargets(Owner.transform.position, Owner.Model.Range)) {
@@ -79,7 +82,7 @@ namespace LARD.Skill {
             foreach (EffectData data in Model.Effects) {
                 if (data == null || data.Timing != EffectApplicationTiming.OnDamageDealt ||
                     data.Target != EffectTargetType.DamagedEnemy ||
-                    data.Effect != SkillEffectType.DamageTakenIncrease) {
+                    data.Effect == SkillEffectType.Damage) {
                     continue;
                 }
 

@@ -4,7 +4,6 @@ using LARD.Stat;
 
 namespace LARD.Battle {
     public sealed class BattleLogic {
-        private const int KillsPerGold = 10;
         private readonly BattleManager _battleManager;
 
         public BattleLogic(BattleManager battleManager) {
@@ -13,9 +12,30 @@ namespace LARD.Battle {
 
         public void OnMonsterDied() {
             int kills = _battleManager.RegisterMonsterKill();
-            if (kills % KillsPerGold == 0) {
-                PlayerDataSet.Resource.Add(ResourceType.Gold, 1);
+            BattleConstModel constants = BattleDataSet.Constants;
+            if (constants == null || PlayerDataSet.Resource == null) {
+                return;
             }
+
+            if (constants.SilverKillsPerReward > 0 && constants.SilverRewardAmount > 0 &&
+                kills % constants.SilverKillsPerReward == 0) {
+                PlayerDataSet.Resource.Add(ResourceType.Silver, constants.SilverRewardAmount);
+            }
+
+            if (constants.GoldKillsPerReward > 0 && constants.GoldRewardAmount > 0 &&
+                kills % constants.GoldKillsPerReward == 0) {
+                PlayerDataSet.Resource.Add(ResourceType.Gold, constants.GoldRewardAmount);
+            }
+        }
+
+        public bool OnStageTimeExpired(bool stageSpawnsCompleted) {
+            if (_battleManager.State != BattleStateType.Playing ||
+                (stageSpawnsCompleted && _battleManager.AliveMonsterCount == 0)) {
+                return false;
+            }
+
+            _battleManager.CompleteDefeat();
+            return true;
         }
     }
 }

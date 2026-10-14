@@ -4,12 +4,15 @@ namespace LARD.Skill {
         DamagedEnemy,
         EnteredEnemy,
         AreaEnemy,
+        NearbyAlly,
     }
 
     public enum SkillEffectType {
         Damage,
         DamageTakenIncrease,
         MoveSpeedDecrease,
+        DefenseDecrease,
+        SkillDamageIncrease,
     }
 
     public enum EffectApplicationTiming {

@@ -59,8 +59,6 @@ namespace LARD.Battle.Editor {
             public readonly int 기물_오브젝트_아이디;
             [ShowInInspector, HideLabel, TableColumnWidth(80), LabelText("기물 아이디")]
             public readonly int 기물_아이디;
-            [ShowInInspector, HideLabel, TableColumnWidth(90), LabelText("기본 공격력")]
-            public readonly float 기본_공격력;
             [ShowInInspector, HideLabel, TableColumnWidth(70), LabelText("종족")]
             public readonly string 종족;
             [ShowInInspector, HideLabel, TableColumnWidth(120), LabelText("업그레이드 레벨")]
@@ -86,7 +84,6 @@ namespace LARD.Battle.Editor {
                 시간 = entry.Time;
                 기물_오브젝트_아이디 = entry.ArticleObjectId;
                 기물_아이디 = entry.ArticleId;
-                기본_공격력 = entry.AttackPower;
                 종족 = entry.Race;
                 업그레이드_레벨 = entry.UpgradeLevel;
                 업그레이드_비율 = entry.UpgradePercent;

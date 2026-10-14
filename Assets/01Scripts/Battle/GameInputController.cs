@@ -110,20 +110,14 @@ namespace LARD.Battle {
         private void OnSelectPressed(InputAction.CallbackContext context) {
             if (Mouse.current != null) {
                 Vector2 position = Mouse.current.position.ReadValue();
-                Debug.Log($"[BattleInput] Left pressed at screen {position}. Listeners: {SelectPressed?.GetInvocationList().Length ?? 0}", this);
                 SelectPressed?.Invoke(position);
-            } else {
-                Debug.LogWarning("[BattleInput] Left press received, but Mouse.current is null.", this);
             }
         }
 
         private void OnSelectReleased(InputAction.CallbackContext context) {
             if (Mouse.current != null) {
                 Vector2 position = Mouse.current.position.ReadValue();
-                Debug.Log($"[BattleInput] Left released at screen {position}. Listeners: {SelectReleased?.GetInvocationList().Length ?? 0}", this);
                 SelectReleased?.Invoke(position);
-            } else {
-                Debug.LogWarning("[BattleInput] Left release received, but Mouse.current is null.", this);
             }
         }
 
@@ -131,8 +125,6 @@ namespace LARD.Battle {
             if (Mouse.current != null) {
                 Vector2 position = Mouse.current.position.ReadValue();
                 MoveCommand?.Invoke(position);
-            } else {
-                Debug.LogWarning("[BattleInput] Right click received, but Mouse.current is null.", this);
             }
         }
     }

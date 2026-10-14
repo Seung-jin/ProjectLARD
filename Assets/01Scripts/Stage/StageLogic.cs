@@ -10,6 +10,7 @@ using UnityEngine;
 namespace LARD.Stage {
     public static class StageLogic {
         private static readonly TimeSpan MonsterSpawnInterval = TimeSpan.FromSeconds(0.5);
+        private const int ClearedStageWaitSeconds = 20;
         private static readonly int ArticleSelectionLayerMask = LayerMask.GetMask("ArticleSelection");
         private const float PlacementGap = 0.05f;
 
@@ -19,21 +20,26 @@ namespace LARD.Stage {
         private static Action<StageModel> _startStage;
         private static Action<int> _stageTimeChanged;
         private static Action _completeVictory;
+        private static Func<bool, bool> _stageTimeExpired;
         private static Action _monsterDied;
         private static ArticleFactory _articleFactory;
         private static MonsterFactory _monsterFactory;
         private static readonly List<MonsterObj> _aliveMonsters = new();
+        private static readonly HashSet<MonsterObj> _currentStageMonsters = new();
 
         private static CancellationTokenSource _stageSequenceCancellation;
         private static bool _finalStageSpawnsCompleted;
+        private static bool _stageSpawnsCompleted;
+        private static int _remainingStageSeconds;
         private static bool _hasWon;
+        private static bool _hasLost;
         private static bool _init;
 
         public static ArticleFactory ArticleFactory => _articleFactory;
 
         public static void Init(Map map, float formationGap, List<ArticleObj> selectedArticles,
                                       Action<StageModel> startStage, Action<int> stageTimeChanged,
-                                      Action completeVictory, Action monsterDied) {
+                                      Action completeVictory, Func<bool, bool> stageTimeExpired, Action monsterDied) {
             if (_init) {
                 Dispose();
             }
@@ -44,11 +50,16 @@ namespace LARD.Stage {
             _startStage = startStage ?? throw new ArgumentNullException(nameof(startStage));
             _stageTimeChanged = stageTimeChanged ?? throw new ArgumentNullException(nameof(stageTimeChanged));
             _completeVictory = completeVictory ?? throw new ArgumentNullException(nameof(completeVictory));
+            _stageTimeExpired = stageTimeExpired ?? throw new ArgumentNullException(nameof(stageTimeExpired));
             _monsterDied = monsterDied ?? throw new ArgumentNullException(nameof(monsterDied));
             _articleFactory = new ArticleFactory();
             _monsterFactory = new MonsterFactory();
             _finalStageSpawnsCompleted = false;
+            _stageSpawnsCompleted = false;
+            _remainingStageSeconds = 0;
+            _currentStageMonsters.Clear();
             _hasWon = false;
+            _hasLost = false;
             _init = true;
         }
 
@@ -317,7 +328,7 @@ namespace LARD.Stage {
             _stageSequenceCancellation = cancellation;
             CancellationToken stageToken = cancellation.Token;
             try {
-                for (int stageId = 1; !_hasWon; stageId++) {
+                for (int stageId = 1; !_hasWon && !_hasLost; stageId++) {
                     stageToken.ThrowIfCancellationRequested();
                     StageModel stage = StageDataSet.GetModel(stageId);
                     if (stage == null) {
@@ -366,6 +377,9 @@ namespace LARD.Stage {
                     }
 
                     _finalStageSpawnsCompleted = false;
+                    _stageSpawnsCompleted = false;
+                    _currentStageMonsters.Clear();
+                    _remainingStageSeconds = Mathf.CeilToInt(stageTime);
                     bool isFinalStage = StageDataSet.GetModel(stageId + 1) == null;
                     _startStage(stage);
                     await UniTask.WhenAll(
@@ -373,7 +387,7 @@ namespace LARD.Stage {
                         RunStageTimerAsync(stageTime, stageToken));
                 }
             } catch (OperationCanceledException) when (stageToken.IsCancellationRequested) {
-                // Victory or destruction ended the stage sequence.
+                // Battle completion or destruction ended the stage sequence.
             } finally {
                 if (_stageSequenceCancellation == cancellation) {
                     _stageSequenceCancellation = null;
@@ -382,14 +396,18 @@ namespace LARD.Stage {
         }
 
         private static async UniTask RunStageTimerAsync(float duration, CancellationToken cancellationToken) {
-            int remainingSeconds = Mathf.CeilToInt(duration);
-            float nextInterval = duration - (remainingSeconds - 1);
+            float nextInterval = duration - (Mathf.CeilToInt(duration) - 1);
 
-            while (remainingSeconds > 0) {
+            while (_remainingStageSeconds > 0) {
                 await UniTask.Delay(TimeSpan.FromSeconds(nextInterval), cancellationToken: cancellationToken);
-                remainingSeconds--;
-                _stageTimeChanged(remainingSeconds);
+                _remainingStageSeconds--;
+                _stageTimeChanged(_remainingStageSeconds);
                 nextInterval = 1f;
+            }
+
+            if (!_hasWon && _stageTimeExpired(_stageSpawnsCompleted)) {
+                _hasLost = true;
+                _stageSequenceCancellation?.Cancel();
             }
         }
 
@@ -407,9 +425,12 @@ namespace LARD.Stage {
                 SpawnMonster(bossModel, stage.BossMonsterHealth);
             }
 
+            _stageSpawnsCompleted = true;
             if (isFinalStage) {
                 _finalStageSpawnsCompleted = true;
                 TryCompleteVictory();
+            } else {
+                ShortenClearedStageWait();
             }
         }
 
@@ -419,6 +440,7 @@ namespace LARD.Stage {
                 monster.MonsterObserver.AddListener(MonsterEventType.Died, OnMonsterDied);
                 monster.Released += OnMonsterReleased;
                 _aliveMonsters.Add(monster);
+                _currentStageMonsters.Add(monster);
             }
         }
 
@@ -426,13 +448,25 @@ namespace LARD.Stage {
             monster.MonsterObserver.RemoveListener(MonsterEventType.Died, OnMonsterDied);
             monster.Released -= OnMonsterReleased;
             _aliveMonsters.Remove(monster);
+            _currentStageMonsters.Remove(monster);
+            ShortenClearedStageWait();
             TryCompleteVictory();
+        }
+
+        private static void ShortenClearedStageWait() {
+            if (!_init || !_stageSpawnsCompleted || _finalStageSpawnsCompleted ||
+                _currentStageMonsters.Count != 0 || _remainingStageSeconds <= ClearedStageWaitSeconds) {
+                return;
+            }
+
+            _remainingStageSeconds = ClearedStageWaitSeconds;
+            _stageTimeChanged(_remainingStageSeconds);
         }
 
         private static void OnMonsterDied() => _monsterDied?.Invoke();
 
         private static void TryCompleteVictory() {
-            if (!_init || _hasWon || !_finalStageSpawnsCompleted || AliveMonsterCount != 0) {
+            if (!_init || _hasWon || _hasLost || !_finalStageSpawnsCompleted || AliveMonsterCount != 0) {
                 return;
             }
 
@@ -455,11 +489,15 @@ namespace LARD.Stage {
                 }
             }
             _aliveMonsters.Clear();
+            _currentStageMonsters.Clear();
+            _stageSpawnsCompleted = false;
+            _remainingStageSeconds = 0;
             _stageSequenceCancellation = null;
             _selectedArticles = null;
             _startStage = null;
             _stageTimeChanged = null;
             _completeVictory = null;
+            _stageTimeExpired = null;
             _monsterDied = null;
             _articleFactory = null;
             _monsterFactory = null;

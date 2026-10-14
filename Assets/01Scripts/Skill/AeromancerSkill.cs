@@ -7,6 +7,7 @@ namespace LARD.Skill {
         public const int SkillId = 5;
         private const float GroundRadius = 1.5f;
         private const float GroundLifetime = 3f;
+        private const float ImmediateGroundLifetime = 0.25f;
         private const float TickInterval = 1f;
 
         private readonly List<GroundLease> _zones = new();
@@ -33,13 +34,31 @@ namespace LARD.Skill {
             }
 
             Vector2 center = monster.transform.position;
-            ObjSkillGround zone = Factory.SpawnObject(prefab, center, Quaternion.identity);
-            zone.InitCircle(center, GroundRadius, GroundLifetime, new Color(1f, 0.85f, 0.1f, 0.6f));
+            bool immediateDamage = false;
+            foreach (EffectData data in Model.Effects) {
+                if (data != null && data.Effect == SkillEffectType.Damage &&
+                    data.Target == EffectTargetType.AreaEnemy &&
+                    data.Timing == EffectApplicationTiming.Immediate) {
+                    immediateDamage = true;
+                    break;
+                }
+            }
 
-            int ownerId = Owner.Id;
-            uint leaseId = zone.LeaseId;
-            zone.Ticked += () => OnGroundTick(zone, leaseId, ownerId, center);
-            zone.StartTicks(TickInterval);
+            ObjSkillGround zone = Factory.SpawnObject(prefab, center, Quaternion.identity);
+            zone.InitCircle(center, GroundRadius,
+                immediateDamage ? ImmediateGroundLifetime : GroundLifetime,
+                new Color(1f, 0.85f, 0.1f, 0.6f));
+
+            if (immediateDamage) {
+                foreach (IAttackTarget target in FindTargetUtil.FindTargets(center, GroundRadius)) {
+                    ApplyToTarget(target, EffectTargetType.AreaEnemy);
+                }
+            } else {
+                int ownerId = Owner.Id;
+                uint leaseId = zone.LeaseId;
+                zone.Ticked += () => OnGroundTick(zone, leaseId, ownerId, center);
+                zone.StartTicks(TickInterval);
+            }
 
             _zones.RemoveAll(existing => existing.Zone == null || existing.Zone.IsInPool ||
                                          existing.Zone.LeaseId != existing.LeaseId);

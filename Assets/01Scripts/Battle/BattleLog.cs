@@ -7,7 +7,6 @@ namespace LARD.Battle {
         public float Time { get; }
         public int ArticleObjectId { get; }
         public int ArticleId { get; }
-        public float AttackPower { get; }
         public string Race { get; }
         public int UpgradeLevel { get; }
         public float UpgradePercent { get; }
@@ -19,13 +18,12 @@ namespace LARD.Battle {
         public float HealthBefore { get; }
         public float HealthAfter { get; }
 
-        public BattleLogEntry(float time, int articleObjectId, int articleId, float attackPower,
+        public BattleLogEntry(float time, int articleObjectId, int articleId,
             string race, int upgradeLevel, float upgradePercent, float baseDamage, float finalDamage,
             int monsterObjectId, int monsterId, float defense, float healthBefore, float healthAfter) {
             Time = time;
             ArticleObjectId = articleObjectId;
             ArticleId = articleId;
-            AttackPower = attackPower;
             Race = race;
             UpgradeLevel = upgradeLevel;
             UpgradePercent = upgradePercent;

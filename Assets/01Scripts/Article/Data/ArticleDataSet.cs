@@ -27,6 +27,12 @@ namespace LARD.Article {
 				Debug.LogError($"ArticleDataSet 로드에 실패했습니다. Addressable Label: {AddressableLabel}");
 				return;
 			}
+
+			foreach (ArticleModel model in _models.Values) {
+				if (model.NextTierModelId > 0 && !TryGetNextTierModel(model, model.Tier + 1, out _)) {
+					Debug.LogError($"ArticleModel의 다음 티어 연결이 올바르지 않습니다: {model.Id} -> {model.NextTierModelId} ({model.name})");
+				}
+			}
 		}
 
 		public static ArticleModel GetModel(int id) => _models.GetValueOrDefault(id);
@@ -55,6 +61,17 @@ namespace LARD.Article {
 			return true;
 		}
 
+		public static bool TryGetNextTierModel(ArticleModel current, int nextTier, out ArticleModel model) {
+			model = current != null && current.NextTierModelId > 0
+				? GetModel(current.NextTierModelId) : null;
+			if (model == null || model.Race != current.Race || model.Tier != nextTier || model.Prefab == null) {
+				model = null;
+				return false;
+			}
+
+			return true;
+		}
+
 		private static void AddAsset(ScriptableObject asset) {
 			if (asset is ArticleTierModel tierModel) {
 				if (!_tierModels.TryAdd(tierModel.Tier, tierModel)) {
@@ -64,10 +81,6 @@ namespace LARD.Article {
 			}
 
 			if (asset is not ArticleModel articleModel) {
-				return;
-			}
-			// Temporarily limit draws and promotions to Yoz for balance testing.
-			if (articleModel.Race != ArticleRace.Yoz) {
 				return;
 			}
 

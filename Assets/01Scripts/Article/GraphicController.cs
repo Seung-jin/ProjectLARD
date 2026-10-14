@@ -7,6 +7,7 @@ namespace LARD.Article {
         [SerializeField] private Animator _animator;
 
         private Quaternion _initialLocalRotation;
+        private bool _initialFlipX;
 
         public SpriteRenderer SpriteRenderer => _spriteRenderer;
         public Animator Animator => _animator;
@@ -15,19 +16,24 @@ namespace LARD.Article {
             _initialLocalRotation = transform.localRotation;
             _spriteRenderer ??= GetComponentInChildren<SpriteRenderer>();
             _animator ??= GetComponentInChildren<Animator>();
+            if (_spriteRenderer != null) {
+                _initialFlipX = _spriteRenderer.flipX;
+            }
         }
 
         public void FaceDirection(Vector2 direction) {
-            if (direction.sqrMagnitude <= 0.0001f) {
+            if (_spriteRenderer == null || Mathf.Abs(direction.x) <= 0.0001f) {
                 return;
             }
 
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
-            transform.rotation = Quaternion.Euler(0f, 0f, angle);
+            _spriteRenderer.flipX = direction.x < 0f;
         }
 
         public void ResetFacing() {
             transform.localRotation = _initialLocalRotation;
+            if (_spriteRenderer != null) {
+                _spriteRenderer.flipX = _initialFlipX;
+            }
         }
     }
 

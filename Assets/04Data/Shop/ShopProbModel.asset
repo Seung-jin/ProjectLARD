@@ -17,4 +17,6 @@ MonoBehaviour:
   - Tier: 1
     Weight: 90
   - Tier: 2
-    Weight: 10
+    Weight: 9
+  - Tier: 3
+    Weight: 1

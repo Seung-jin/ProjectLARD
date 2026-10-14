@@ -28,8 +28,12 @@ namespace LARD.Article {
 
             ArticleTierModel currentTier = ArticleDataSet.GetTierModel(article.Tier);
             ArticleTierModel nextTier = ArticleDataSet.GetTierModel(article.Tier + 1);
-            if (!ArticleDataSet.TryPickArticle(article.Model.Race, nextTier.Tier, out ArticleModel nextModel)) {
-                Debug.LogWarning($"[ArticlePromotion] Logic failed: no article is available for race {article.Model.Race}, tier {nextTier.Tier}.", article);
+            ArticleModel nextModel;
+            bool foundNextModel = article.Tier == 1
+                ? ArticleDataSet.TryPickArticle(article.Model.Race, nextTier.Tier, out nextModel)
+                : ArticleDataSet.TryGetNextTierModel(article.Model, nextTier.Tier, out nextModel);
+            if (!foundNextModel) {
+                Debug.LogWarning($"[ArticlePromotion] Logic failed: no valid promotion model for article {article.Model.Id}, tier {nextTier.Tier}.", article);
                 return false;
             }
 
@@ -75,6 +79,48 @@ namespace LARD.Article {
             return TryGetUpgradeCost(article, out cost, out _);
         }
 
+        public bool TrySellSelectedArticle() {
+            if (_selectedArticles.Count != 1) {
+                Debug.LogWarning($"[ArticleSale] Exactly one article must be selected (selected: {_selectedArticles.Count}).");
+                return false;
+            }
+
+            ArticleObj article = _selectedArticles[0];
+            if (!TryGetSaleCost(article, out int saleCost)) {
+                Debug.LogWarning("[ArticleSale] Selected article or tier sale data is invalid.", article);
+                return false;
+            }
+
+            PlayerResource resource = PlayerDataSet.Resource;
+            if (resource == null) {
+                Debug.LogWarning("[ArticleSale] Player resource is not loaded.", article);
+                return false;
+            }
+
+            int modelId = article.Model.Id;
+            int tier = article.Tier;
+            _factory.Release(article);
+            _selectedArticles.Clear();
+            resource.Add(ResourceType.Silver, saleCost);
+            Debug.Log($"[ArticleSale] Sold article {modelId}, tier {tier} for {saleCost} Silver.");
+            return true;
+        }
+
+        public static bool TryGetSaleCost(ArticleObj article, out int cost) {
+            cost = 0;
+            if (article == null || !article.gameObject.activeInHierarchy || article.IsInPool || article.Model == null) {
+                return false;
+            }
+
+            ArticleTierModel tierModel = ArticleDataSet.GetTierModel(article.Tier);
+            if (tierModel == null || tierModel.SaleCost <= 0) {
+                return false;
+            }
+
+            cost = tierModel.SaleCost;
+            return true;
+        }
+
         private static bool TryGetUpgradeCost(ArticleObj article, out int cost, out string reason) {
             cost = 0;
             reason = null;
@@ -100,8 +146,13 @@ namespace LARD.Article {
                 return false;
             }
 
-            if (!ArticleDataSet.HasArticle(article.Model.Race, nextTier.Tier)) {
+            if (article.Tier == 1 && !ArticleDataSet.HasArticle(article.Model.Race, nextTier.Tier)) {
                 reason = $"no article is available for race {article.Model.Race}, tier {nextTier.Tier}.";
+                return false;
+            }
+
+            if (article.Tier >= 2 && !ArticleDataSet.TryGetNextTierModel(article.Model, nextTier.Tier, out _)) {
+                reason = $"article {article.Model.Id} has no valid same-class model at tier {nextTier.Tier}.";
                 return false;
             }
 

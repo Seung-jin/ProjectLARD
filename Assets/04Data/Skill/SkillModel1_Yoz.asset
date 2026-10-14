@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: SkillModel1_Yoz
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Skill.SkillModel
   Id: 1
+  Damage: 100
   Effects:
   - Target: 0
     Effect: 0
     Timing: 0
-    AttackPowerRatio: 1
     HitCount: 1

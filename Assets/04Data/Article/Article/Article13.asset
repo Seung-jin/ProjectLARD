@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73cdeac3945a44ae95372d6d044a7546, type: 3}
+  m_Name: Article13
+  m_EditorClassIdentifier: Assembly-CSharp::LARD.Article.ArticleModel
+  Id: 13
+  Race: 0
+  Tier: 3
+  AttackSpeed: 1.1
+  MoveSpeed: 3
+  Range: 5.5
+  Prefab: {fileID: 900000000000000002, guid: b68cd572e2bb402b9a0e89aac259a19a, type: 3}
+  Skill: {fileID: 11400000, guid: cab0f5d0d3bd45e4a9aa76b699b837c0, type: 2}

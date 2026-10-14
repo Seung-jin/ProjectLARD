@@ -27,7 +27,6 @@ namespace LARD.Skill {
 				float rightDistance = ((Vector2)right.TargetTransform.position - center).sqrMagnitude;
 				return nearestFirst ? leftDistance.CompareTo(rightDistance) : rightDistance.CompareTo(leftDistance);
 			});
-			Debug.Log($"[FindTargetUtil] 탐색된 적: {targets.Count}마리 (중심: {center}, 범위: {range})");
 
 			return targets;
 		}

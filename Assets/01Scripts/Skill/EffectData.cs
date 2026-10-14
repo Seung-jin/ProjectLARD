@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace LARD.Skill {
     [Serializable]
@@ -8,12 +7,11 @@ namespace LARD.Skill {
         public EffectTargetType Target = EffectTargetType.NearestEnemy;
         public SkillEffectType Effect = SkillEffectType.Damage;
         public EffectApplicationTiming Timing = EffectApplicationTiming.Immediate;
-        [FormerlySerializedAs("Damage")]
-        [FormerlySerializedAs("AttackPowerPercent")]
-        [Min(0f), Tooltip("Damage multiplier of the article's attack power (1 = 100%).")]
-        public float AttackPowerRatio = 1f;
         [Min(1)] public int HitCount = 1;
+        [Min(0)] public int MaxTargets;
         [Min(0f)] public float DurationSeconds;
         [Min(0f)] public float ValuePercent;
+        [Min(0f)] public float Radius;
+        [Range(0f, 360f)] public float ConeAngleDegrees;
     }
 }

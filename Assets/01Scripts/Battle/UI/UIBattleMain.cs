@@ -15,6 +15,7 @@ namespace LARD.Battle {
 		[SerializeField] private TextMeshProUGUI _silverText;
 		[SerializeField] private TextMeshProUGUI _goldText;
 		[SerializeField] private Button _summonBtn;
+		[SerializeField] private Button _startBattleBtn;
 		[SerializeField] private UIArticleInfo _articleInfo;
 		[SerializeField] private SlotRaceUpgrade _yozUpgradeSlot;
 		[SerializeField] private SlotRaceUpgrade _sylinUpgradeSlot;
@@ -23,10 +24,11 @@ namespace LARD.Battle {
 		public override void Init(UIType type) {
 			base.Init(type);
 			_summonBtn.onClick.AddListener(OnClickSummonBtn);
+			_startBattleBtn.onClick.AddListener(OnClickStartBattleBtn);
 			_articleInfo.Init(UIType.ArticleInfo);
-			_yozUpgradeSlot.Init(ArticleRace.Yoz);
-			_sylinUpgradeSlot.Init(ArticleRace.Sylin);
-			_shushireUpgradeSlot.Init(ArticleRace.Shushire);
+			_yozUpgradeSlot.Init(ArticleRace.Beastkin);
+			_sylinUpgradeSlot.Init(ArticleRace.Mage);
+			_shushireUpgradeSlot.Init(ArticleRace.Warrior);
 		}
 
 		public override void Show(params object[] args) {
@@ -38,6 +40,7 @@ namespace LARD.Battle {
 				UpdateBalances();
 			}
 			if (BattleManager.Instance == null) {
+				_startBattleBtn.gameObject.SetActive(false);
 				Debug.LogWarning("[UIBattleMain] BattleManager was not found.", this);
 				return;
 			}
@@ -46,6 +49,8 @@ namespace LARD.Battle {
 			BattleManager.Instance.StageTimeChanged += UpdateTime;
 			BattleManager.Instance.SelectionChanged += UpdateArticleInfo;
 			UpdateStage(BattleManager.Instance.CurrentStage);
+			_startBattleBtn.gameObject.SetActive(!BattleManager.Instance.HasBattleStarted);
+			_startBattleBtn.interactable = true;
 			UpdateTime(BattleManager.Instance.RemainingStageSeconds);
 			UpdateArticleInfo(BattleManager.Instance.SelectedArticle);
 		}
@@ -104,6 +109,9 @@ namespace LARD.Battle {
 
 		private void UpdateStage(StageModel stage) {
 			_stageText.text = stage == null ? "-" : $"Stage {stage.Id}";
+			if (stage != null) {
+				_startBattleBtn.gameObject.SetActive(false);
+			}
 		}
 
 		private void UpdateTime(int remainingSeconds) {
@@ -117,6 +125,12 @@ namespace LARD.Battle {
 			}
 
 			ShopLogic.TryPickAndSummonArticle();
+		}
+
+		private void OnClickStartBattleBtn() {
+			if (BattleManager.Instance != null && BattleManager.Instance.TryStartBattle()) {
+				_startBattleBtn.interactable = false;
+			}
 		}
 	}
 }

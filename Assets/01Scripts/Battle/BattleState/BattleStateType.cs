@@ -3,6 +3,7 @@ namespace LARD.Battle {
         Preparing,
         Playing,
         Victory,
+        Defeat,
     }
 
 }

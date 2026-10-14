@@ -33,7 +33,8 @@ namespace LARD.Monster {
         public MoveComponentMonsterPath MoveComponent => _moveComponent;
         public Transform TargetTransform => transform;
         public bool IsAlive => _statController != null && _statController.IsAlive;
-        public float DefensePercent => _statController != null ? _statController.Defense : 0f;
+        public float DefensePercent => _statController != null
+            ? Mathf.Max(0f, _statController.Defense - EffectController.DefenseDecreasePercent) : 0f;
 
         public void TakeDamage(float damage) {
             if (!IsAlive) {

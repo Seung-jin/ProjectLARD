@@ -6,7 +6,8 @@ namespace LARD.Skill {
 	public sealed class SkillModel : ScriptableObject {
 		public int Id;
 		public SkillObjBase SkillObjectPrefab;
-		[Tooltip("Damage effects use a multiplier of the owner's attack power (1 = 100%).")]
+		[Min(0f), Tooltip("Fixed damage dealt by each damage effect hit before upgrades, buffs, and defense.")]
+		public float Damage;
 		public List<EffectData> Effects = new();
 	}
 }

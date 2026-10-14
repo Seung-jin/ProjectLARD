@@ -23,6 +23,7 @@ namespace LARD.Battle {
 		private BattleInputLogic _inputLogic;
 		private ArticleLogic _articleLogic;
 		private BattleLogic _battleLogic;
+		private bool _battleStartRequested;
 
 		public IReadOnlyList<ArticleObj> SelectedArticles => _selectedArticles;
 		public ArticleObj SelectedArticle => _selectedArticles.Count == 1 && _selectedArticles[0] != null &&
@@ -33,10 +34,12 @@ namespace LARD.Battle {
 		public StageModel CurrentStage { get; private set; }
 		public int RemainingStageSeconds { get; private set; }
 		public BattleStateType State { get; private set; } = BattleStateType.Preparing;
+		public bool HasBattleStarted => _battleStartRequested;
 		public event Action<StageModel> StageChanged;
 		public event Action<int> StageTimeChanged;
 		public event Action<ArticleObj> SelectionChanged;
 		public event Action VictoryAchieved;
+		public event Action DefeatAchieved;
 		public int AliveMonsterCount => StageLogic.AliveMonsterCount;
 
 		// 전투 로직 초기화
@@ -50,10 +53,10 @@ namespace LARD.Battle {
 			_inputLogic = GetComponent<BattleInputLogic>();
 			_inputLogic.Init(this);
 			_map ??= FindFirstObjectByType<Map>();
-			StageLogic.Init(_map, _formationGap, _selectedArticles, StartStage, SetRemainingStageSeconds, CompleteVictory,
-			                      () => BattleObserver.TriggerEvent(BattleEventType.MonsterDied));
-			_articleLogic = new ArticleLogic(_selectedArticles, StageLogic.ArticleFactory);
 			_battleLogic = new BattleLogic(this);
+			StageLogic.Init(_map, _formationGap, _selectedArticles, StartStage, SetRemainingStageSeconds, CompleteVictory,
+			                      _battleLogic.OnStageTimeExpired, () => BattleObserver.TriggerEvent(BattleEventType.MonsterDied));
+			_articleLogic = new ArticleLogic(_selectedArticles, StageLogic.ArticleFactory);
 		}
 
 		// 전투 시작
@@ -83,19 +86,31 @@ namespace LARD.Battle {
 				}
 				if (UIManager.Instance == null) {
 					Debug.LogError("[Battle] UIManager is missing from the UI scene.", this);
-				} else {
-					await UIManager.Instance.ShowAsync(UIType.Battle);
-					if (UIManager.Instance.GetUI<UIBattleMain>(UIType.Battle) == null) {
-						Debug.LogError("[Battle] UIBattle prefab could not be shown.", this);
-					}
+					return;
+				}
+				await UIManager.Instance.ShowAsync(UIType.Battle);
+				if (UIManager.Instance.GetUI<UIBattleMain>(UIType.Battle) == null) {
+					Debug.LogError("[Battle] UIBattle prefab could not be shown.", this);
+					return;
 				}
 				if (cancellationToken.IsCancellationRequested) {
 					return;
 				}
+				await UniTask.WaitUntil(() => _battleStartRequested, cancellationToken: cancellationToken);
 			await StageLogic.RunAsync(cancellationToken);
 			} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
 				// The battle object was destroyed while loading its data.
 			}
+		}
+
+		// 첫 전투 시작 요청
+		public bool TryStartBattle() {
+			if (_battleStartRequested || State != BattleStateType.Preparing) {
+				return false;
+			}
+
+			_battleStartRequested = true;
+			return true;
 		}
 
 		// 스테이지 시작 처리
@@ -120,6 +135,17 @@ namespace LARD.Battle {
 			SetRemainingStageSeconds(0);
 			Debug.Log("[Battle] Victory! All monsters have been defeated after the final stage spawned.", this);
 			VictoryAchieved?.Invoke();
+		}
+
+		// 패배 처리 진행
+		internal void CompleteDefeat() {
+			if (State != BattleStateType.Playing) {
+				return;
+			}
+
+			State = BattleStateType.Defeat;
+			Debug.Log("[Battle] Defeat! The stage timer expired before all monsters were defeated.", this);
+			DefeatAchieved?.Invoke();
 		}
 
 		// 전투 입력 등록
@@ -188,16 +214,25 @@ namespace LARD.Battle {
 			return upgraded;
 		}
 
+		public bool TrySellSelectedArticle() {
+			if (!_articleLogic.TrySellSelectedArticle()) {
+				return false;
+			}
+
+			SelectionChanged?.Invoke(SelectedArticle);
+			return true;
+		}
+
 		private void OnTestUpgradeSelectedArticle() {
 			TryUpgradeSelectedArticle();
 		}
 
 		private void OnTestUpgradeYoz() {
-			if (UpgradeLogic.TryUpgrade(ArticleRace.Yoz)) {
-				PlayerUpgrade upgrade = UpgradeDataSet.GetPlayerUpgrade(ArticleRace.Yoz);
-				Debug.Log($"[BattleInput] Yoz upgraded to level {upgrade.Level}.", this);
+			if (UpgradeLogic.TryUpgrade(ArticleRace.Beastkin)) {
+				PlayerUpgrade upgrade = UpgradeDataSet.GetPlayerUpgrade(ArticleRace.Beastkin);
+				Debug.Log($"[BattleInput] Beastkin upgraded to level {upgrade.Level}.", this);
 			} else {
-				Debug.LogWarning("[BattleInput] Yoz upgrade failed. Check Gold, level, and upgrade data.", this);
+				Debug.LogWarning("[BattleInput] Beastkin upgrade failed. Check Gold, level, and upgrade data.", this);
 			}
 		}
 	}

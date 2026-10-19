@@ -10,23 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 22c72ce66a564aa69af84a59482ee5e3, type: 3}
-  m_Name: SkillModel18_Bard
+  m_Name: SkillModel15
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Skill.SkillModel
-  Id: 9
+  Id: 6
   SkillObjectPrefab: {fileID: 0}
-  Damage: 800
   Effects:
   - Target: 0
     Effect: 0
     Timing: 0
+    Damage: 5700
     HitCount: 1
+    MaxTargets: 0
     DurationSeconds: 0
     ValuePercent: 0
     Radius: 0
-  - Target: 4
-    Effect: 4
-    Timing: 1
-    HitCount: 1
-    DurationSeconds: 3
-    ValuePercent: 10
-    Radius: 3
+    ConeAngleDegrees: 0

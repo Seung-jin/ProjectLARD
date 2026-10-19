@@ -5,6 +5,9 @@ using LSJ.Util;
 using UnityEngine;
 
 namespace LARD.Article {
+    /// <summary>
+    /// 기물 프리팹을 풀에서 재사용하고 모델·스킬을 연결해 전투용 기물을 생성한다.
+    /// </summary>
     public sealed class ArticleFactory {
         private const string CounterKey = "ArticleObj";
 

@@ -10,23 +10,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 22c72ce66a564aa69af84a59482ee5e3, type: 3}
-  m_Name: SkillModel20_Warlord
+  m_Name: SkillModel21
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Skill.SkillModel
-  Id: 11
+  Id: 12
   SkillObjectPrefab: {fileID: 0}
-  Damage: 1620
   Effects:
   - Target: 0
     Effect: 0
     Timing: 0
+    Damage: 2000
     HitCount: 1
+    MaxTargets: 0
     DurationSeconds: 0
     ValuePercent: 0
     Radius: 0
-  - Target: 1
-    Effect: 2
+    ConeAngleDegrees: 0
+  - Target: 4
+    Effect: 5
     Timing: 1
+    Damage: 0
     HitCount: 1
+    MaxTargets: 6
     DurationSeconds: 1
-    ValuePercent: 70
-    Radius: 0
+    ValuePercent: 10
+    Radius: 1.5
+    ConeAngleDegrees: 0

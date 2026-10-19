@@ -15,6 +15,7 @@ namespace LARD.Upgrade {
 
         public async UniTask Load() {
             _models.Clear();
+            _playerUpgrades.Clear();
             foreach (ArticleRace race in Enum.GetValues(typeof(ArticleRace))) {
                 _playerUpgrades.TryAdd(race, new PlayerUpgrade(race));
             }

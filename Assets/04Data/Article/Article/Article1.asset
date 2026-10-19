@@ -17,6 +17,6 @@ MonoBehaviour:
   Tier: 1
   AttackSpeed: 1
   MoveSpeed: 3
-  Range: 5
+  Range: 2.5
   Prefab: {fileID: 900000000000100005, guid: ada24397d24f45888f57bd564888235c, type: 3}
   Skill: {fileID: 11400000, guid: 35fd987302ec49a6b27a849ef5d8d6df, type: 2}

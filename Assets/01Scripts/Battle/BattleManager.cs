@@ -4,15 +4,18 @@ using Cysharp.Threading.Tasks;
 using LARD.Article;
 using LARD.Data;
 using LARD.Stage;
-using LARD.Upgrade;
 using LSJ.UI;
 using LSJ.Util;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace LARD.Battle {
+	/// <summary>
+	/// 전투 준비와 진행 상태를 조율하고 입력, 스테이지 로직과 UI 이벤트를 연결한다.
+	/// </summary>
 	[RequireComponent(typeof(GameInputController), typeof(BattleInputLogic))]
 	public sealed class BattleManager : Singleton<BattleManager> {
+		private const string BattleScenePath = "Assets/02Scenes/Battle.unity";
 		private const string UiScenePath = "Assets/02Scenes/UI.unity";
 
 		[SerializeField, Min(0f)] private float _formationGap = 0.1f;
@@ -24,6 +27,7 @@ namespace LARD.Battle {
 		private ArticleLogic _articleLogic;
 		private BattleLogic _battleLogic;
 		private bool _battleStartRequested;
+		private bool _restartRequested;
 
 		public IReadOnlyList<ArticleObj> SelectedArticles => _selectedArticles;
 		public ArticleObj SelectedArticle => _selectedArticles.Count == 1 && _selectedArticles[0] != null &&
@@ -34,6 +38,7 @@ namespace LARD.Battle {
 		public StageModel CurrentStage { get; private set; }
 		public int RemainingStageSeconds { get; private set; }
 		public BattleStateType State { get; private set; } = BattleStateType.Preparing;
+		public bool IsReady { get; private set; }
 		public bool HasBattleStarted => _battleStartRequested;
 		public event Action<StageModel> StageChanged;
 		public event Action<int> StageTimeChanged;
@@ -57,6 +62,7 @@ namespace LARD.Battle {
 			StageLogic.Init(_map, _formationGap, _selectedArticles, StartStage, SetRemainingStageSeconds, CompleteVictory,
 			                      _battleLogic.OnStageTimeExpired, () => BattleObserver.TriggerEvent(BattleEventType.MonsterDied));
 			_articleLogic = new ArticleLogic(_selectedArticles, StageLogic.ArticleFactory);
+			BattleLog.Clear();
 		}
 
 		// 전투 시작
@@ -69,7 +75,7 @@ namespace LARD.Battle {
 			StartStagesAsync().Forget();
 		}
 
-		// 전투 준비 및 스테이지 진행
+		/// <summary>UI와 전투 데이터를 준비한 뒤 시작 요청을 기다려 스테이지 진행을 실행한다.</summary>
 		private async UniTask StartStagesAsync() {
 			var cancellationToken = this.GetCancellationTokenOnDestroy();
 			try {
@@ -96,6 +102,7 @@ namespace LARD.Battle {
 				if (cancellationToken.IsCancellationRequested) {
 					return;
 				}
+				IsReady = true;
 				await UniTask.WaitUntil(() => _battleStartRequested, cancellationToken: cancellationToken);
 			await StageLogic.RunAsync(cancellationToken);
 			} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
@@ -103,9 +110,9 @@ namespace LARD.Battle {
 			}
 		}
 
-		// 첫 전투 시작 요청
+		/// <summary>전투 준비가 끝났을 때 첫 스테이지 시작을 요청한다.</summary>
 		public bool TryStartBattle() {
-			if (_battleStartRequested || State != BattleStateType.Preparing) {
+			if (!IsReady || _battleStartRequested || State != BattleStateType.Preparing) {
 				return false;
 			}
 
@@ -113,7 +120,26 @@ namespace LARD.Battle {
 			return true;
 		}
 
-		// 스테이지 시작 처리
+		public bool TryRestartBattle() {
+			if (!IsReady || _restartRequested || !gameObject.activeInHierarchy) {
+				return false;
+			}
+
+			_restartRequested = true;
+			RestartBattleAsync().Forget();
+			return true;
+		}
+
+		private async UniTask RestartBattleAsync() {
+			try {
+				await SceneManager.LoadSceneAsync(BattleScenePath, LoadSceneMode.Single).ToUniTask();
+			} catch (Exception exception) {
+				_restartRequested = false;
+				Debug.LogException(exception, this);
+			}
+		}
+
+		/// <summary>현재 스테이지와 제한 시간을 설정하고 스테이지 변경을 알린다.</summary>
 		private void StartStage(StageModel stage) {
 			CurrentStage = stage;
 			State = BattleStateType.Playing;
@@ -129,7 +155,7 @@ namespace LARD.Battle {
 			StageTimeChanged?.Invoke(remainingSeconds);
 		}
 
-		// 승리 처리 진행
+		/// <summary>전투를 승리 상태로 전환하고 결과를 알린다.</summary>
 		private void CompleteVictory() {
 			State = BattleStateType.Victory;
 			SetRemainingStageSeconds(0);
@@ -137,7 +163,7 @@ namespace LARD.Battle {
 			VictoryAchieved?.Invoke();
 		}
 
-		// 패배 처리 진행
+		/// <summary>진행 중인 전투를 패배 상태로 전환하고 결과를 알린다.</summary>
 		internal void CompleteDefeat() {
 			if (State != BattleStateType.Playing) {
 				return;
@@ -157,8 +183,6 @@ namespace LARD.Battle {
 			_input.AddSelectPressedListener(_inputLogic.OnSelectPressed);
 			_input.AddSelectReleasedListener(_inputLogic.OnSelectReleased);
 			_input.AddMoveListener(_inputLogic.OnMoveCommand);
-			_input.AddUpgradeArticleListener(OnTestUpgradeSelectedArticle);
-			_input.AddUpgradeYozListener(OnTestUpgradeYoz);
 			Debug.Log("[BattleInput] BattleManager registered input listeners.", this);
 		}
 
@@ -171,8 +195,6 @@ namespace LARD.Battle {
 			_input.RemoveSelectPressedListener(_inputLogic.OnSelectPressed);
 			_input.RemoveSelectReleasedListener(_inputLogic.OnSelectReleased);
 			_input.RemoveMoveListener(_inputLogic.OnMoveCommand);
-			_input.RemoveUpgradeArticleListener(OnTestUpgradeSelectedArticle);
-			_input.RemoveUpgradeYozListener(OnTestUpgradeYoz);
 			_inputLogic.CancelDrag();
 		}
 
@@ -221,19 +243,6 @@ namespace LARD.Battle {
 
 			SelectionChanged?.Invoke(SelectedArticle);
 			return true;
-		}
-
-		private void OnTestUpgradeSelectedArticle() {
-			TryUpgradeSelectedArticle();
-		}
-
-		private void OnTestUpgradeYoz() {
-			if (UpgradeLogic.TryUpgrade(ArticleRace.Beastkin)) {
-				PlayerUpgrade upgrade = UpgradeDataSet.GetPlayerUpgrade(ArticleRace.Beastkin);
-				Debug.Log($"[BattleInput] Beastkin upgraded to level {upgrade.Level}.", this);
-			} else {
-				Debug.LogWarning("[BattleInput] Beastkin upgrade failed. Check Gold, level, and upgrade data.", this);
-			}
 		}
 	}
 }

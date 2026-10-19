@@ -19,7 +19,7 @@ namespace LARD.Article {
 		public int NextTierModelId;
 		[Min(0f)] public float AttackSpeed = 1f;
 		[Min(0f)] public float MoveSpeed = 3f;
-		[Min(0f)] public float Range = 5f;
+		[Min(0f)] public float Range = 2.5f;
 
 		[AssetSelector] public ArticleObj Prefab;
 		[AssetSelector] public SkillModel Skill;

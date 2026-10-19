@@ -16,6 +16,7 @@ namespace LARD.Battle {
 		[SerializeField] private TextMeshProUGUI _goldText;
 		[SerializeField] private Button _summonBtn;
 		[SerializeField] private Button _startBattleBtn;
+		[SerializeField] private Button _restartBtn;
 		[SerializeField] private UIArticleInfo _articleInfo;
 		[SerializeField] private SlotRaceUpgrade _yozUpgradeSlot;
 		[SerializeField] private SlotRaceUpgrade _sylinUpgradeSlot;
@@ -25,6 +26,7 @@ namespace LARD.Battle {
 			base.Init(type);
 			_summonBtn.onClick.AddListener(OnClickSummonBtn);
 			_startBattleBtn.onClick.AddListener(OnClickStartBattleBtn);
+			_restartBtn.onClick.AddListener(OnClickRestartBtn);
 			_articleInfo.Init(UIType.ArticleInfo);
 			_yozUpgradeSlot.Init(ArticleRace.Beastkin);
 			_sylinUpgradeSlot.Init(ArticleRace.Mage);
@@ -131,6 +133,10 @@ namespace LARD.Battle {
 			if (BattleManager.Instance != null && BattleManager.Instance.TryStartBattle()) {
 				_startBattleBtn.interactable = false;
 			}
+		}
+
+		private void OnClickRestartBtn() {
+			BattleManager.Instance?.TryRestartBattle();
 		}
 	}
 }

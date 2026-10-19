@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// 지정된 타겟을 따라 이동
+/// 지정한 대상을 추적하고 정지 거리 안에 들어오면 멈춘다.
 /// </summary>
 public class MoveComponentTarget : MoveComponent {
 	[SerializeField] private float _stopDistance = 1f;

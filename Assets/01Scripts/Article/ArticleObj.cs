@@ -1,6 +1,6 @@
 using Sirenix.OdinInspector;
 using UnityEngine;
-using LARD.Effects;
+using LARD.Buff;
 
 namespace LARD.Article {
     // 기물 상태와 구성 요소 관리
@@ -15,7 +15,7 @@ namespace LARD.Article {
         [SerializeField] private UIArticleObj _uiArticleObj;
 
         public int Tier { get; private set; }
-        public EffectController EffectController { get; } = new();
+        public BuffController BuffController { get; } = new();
         public ArticleModel Model { get; private set; }
         public MoveComponent MoveComponent => _moveComponent;
         public SkillController SkillController => _skillController;
@@ -34,8 +34,17 @@ namespace LARD.Article {
             }
         }
 
+        private void OnDrawGizmos() {
+            if (!Application.isPlaying || !gameObject.activeInHierarchy || Model == null || Model.Range <= 0f) {
+                return;
+            }
+
+            Gizmos.color = new Color(0.2f, 0.85f, 1f, 0.8f);
+            Gizmos.DrawWireSphere(transform.position, Model.Range);
+        }
+
         internal void Init(ArticleModel model, int id, int tier) {
-            EffectController.Clear();
+            BuffController.Clear();
             Model = model;
             Id = id;
             Tier = tier;
@@ -45,7 +54,7 @@ namespace LARD.Article {
         }
 
         public override void OnReleaseToPool() {
-            EffectController.Clear();
+            BuffController.Clear();
             if (_moveComponent != null) {
                 _moveComponent.Stop();
             }

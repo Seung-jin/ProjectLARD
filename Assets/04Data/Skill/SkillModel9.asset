@@ -10,21 +10,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 22c72ce66a564aa69af84a59482ee5e3, type: 3}
-  m_Name: SkillModel4_Artist
+  m_Name: SkillModel9
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Skill.SkillModel
-  Id: 4
-  SkillObjectPrefab: {fileID: 100003, guid: fbd1860582df4ba691ac06c827ebbfbf, type: 3}
-  Damage: 550
+  Id: 9
+  SkillObjectPrefab: {fileID: 0}
   Effects:
-  - Target: 2
+  - Target: 0
     Effect: 0
-    Timing: 2
+    Timing: 0
+    Damage: 650
     HitCount: 1
+    MaxTargets: 0
     DurationSeconds: 0
     ValuePercent: 0
-  - Target: 1
-    Effect: 3
+    Radius: 0
+    ConeAngleDegrees: 0
+  - Target: 4
+    Effect: 4
     Timing: 1
+    Damage: 0
     HitCount: 1
-    DurationSeconds: 3
+    MaxTargets: 6
+    DurationSeconds: 1
     ValuePercent: 5
+    Radius: 1.5
+    ConeAngleDegrees: 0

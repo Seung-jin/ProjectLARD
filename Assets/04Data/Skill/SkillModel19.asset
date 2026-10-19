@@ -10,16 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 22c72ce66a564aa69af84a59482ee5e3, type: 3}
-  m_Name: SkillModel19_Berserker
+  m_Name: SkillModel19
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Skill.SkillModel
   Id: 10
   SkillObjectPrefab: {fileID: 0}
-  Damage: 1800
   Effects:
   - Target: 0
     Effect: 0
     Timing: 0
+    Damage: 5700
     HitCount: 1
+    MaxTargets: 0
     DurationSeconds: 0
     ValuePercent: 0
     Radius: 0
+    ConeAngleDegrees: 0

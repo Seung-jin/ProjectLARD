@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Stage3
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Stage.StageModel
   Id: 3
-  StageTime: 150
-  MonsterCount: 54
+  StageTime: 120
+  MonsterCount: 60
   MonsterId: 1
   MonsterHealth: 1800
-  BossMonsterId: 1
-  BossMonsterHealth: 45000
+  BossMonsterId: 0
+  BossMonsterHealth: 0

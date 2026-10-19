@@ -3,6 +3,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace LARD.Battle {
+    /// <summary>
+    /// 화면 입력을 기물 선택과 이동 명령으로 해석하고 UI 위의 선택 입력을 걸러낸다.
+    /// </summary>
     public sealed class BattleInputLogic : MonoBehaviour {
         [SerializeField] private Camera _worldCamera;
         [SerializeField, Min(0f)] private float _dragThresholdPixels = 5f;

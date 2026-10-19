@@ -1,11 +1,14 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using LARD.Buff;
 using LARD.Skill;
 using UnityEngine;
 
 namespace LARD.Article {
-    // 기물의 스킬 사용과 공격 주기 관리
+    /// <summary>
+    /// 기물의 스킬 인스턴스, 공격 주기와 사용 중 취소를 관리한다.
+    /// </summary>
     public sealed class SkillController : MonoBehaviour {
         private CancellationTokenSource _attackLoopCancellation;
         private CancellationTokenSource _skillUseCancellation;
@@ -18,10 +21,12 @@ namespace LARD.Article {
             _movement = GetComponent<MoveComponentDestination>();
         }
 
+        /// <summary>이동 중이 아닐 때 현재 스킬의 사용을 시도한다.</summary>
         public bool TryUse() {
             return Skill != null && !IsMoving() && Skill.TryUse();
         }
 
+        /// <summary>기존 스킬을 정리하고 새 스킬을 연결하며 활성 상태면 공격 루프를 시작한다.</summary>
         public void SetSkill(SkillModel model, SkillBase skill) {
             ClearSkill();
             Model = model;
@@ -31,10 +36,12 @@ namespace LARD.Article {
             }
         }
 
+        /// <summary>현재 진행 중인 스킬 사용을 취소한다.</summary>
         public void CancelCurrentSkill() {
             _skillUseCancellation?.Cancel();
         }
 
+        /// <summary>공격 루프를 중단하고 스킬 인스턴스를 정리한다.</summary>
         public void ClearSkill() {
             StopAttackLoop();
             if (Skill != null) {
@@ -77,27 +84,25 @@ namespace LARD.Article {
             return _movement != null && _movement.IsMoving;
         }
 
+        /// <summary>공격 속도와 강화 효과를 반영해 스킬 사용 주기를 진행한다.</summary>
         private async UniTaskVoid AttackLoopAsync(SkillBase skill, CancellationTokenSource cancellation) {
             CancellationToken token = cancellation.Token;
-            float nextAttackTime = Time.time;
+            float attackProgress = 1f;
             try {
                 while (!token.IsCancellationRequested) {
-                    if (IsMoving()) {
-                        await UniTask.WaitUntil(() => !IsMoving(), cancellationToken: token);
-                    }
-
-                    float waitSeconds = nextAttackTime - Time.time;
-                    if (waitSeconds > 0f) {
-                        await UniTask.Delay(TimeSpan.FromSeconds(waitSeconds), cancellationToken: token);
+                    if (attackProgress < 1f || IsMoving()) {
+                        await UniTask.Yield(PlayerLoopTiming.Update, token);
+                        float speed = skill.Owner.Model.AttackSpeed *
+                                      (1f + skill.Owner.BuffController.GetTotalValue(BuffType.AttackSpeedIncrease) / 100f);
+                        attackProgress = Mathf.Min(1f, attackProgress + Time.deltaTime * Mathf.Max(0f, speed));
                         continue;
                     }
 
-                    float attackSpeed = skill.Owner.Model.AttackSpeed;
-                    if (attackSpeed <= 0f) {
+                    if (skill.Owner.Model.AttackSpeed <= 0f) {
                         return;
                     }
 
-                    nextAttackTime = Time.time + 1f / attackSpeed;
+                    attackProgress = 0f;
                     using var skillCancellation = CancellationTokenSource.CreateLinkedTokenSource(token);
                     _skillUseCancellation = skillCancellation;
                     try {

@@ -11,6 +11,9 @@ namespace LARD.Skill {
         public const string Attack = "Attack";
     }
 
+    /// <summary>
+    /// 스킬의 사용과 대상별 이펙트 적용 흐름을 담당하는 기본 클래스다.
+    /// </summary>
     public class SkillBase : ScriptableObject {
         public ArticleObj Owner { get; private set; }
         public SkillModel Model { get; private set; }
@@ -20,11 +23,13 @@ namespace LARD.Skill {
             Factory = factory;
         }
 
+        /// <summary>시전자와 이펙트 설정을 포함한 스킬 데이터를 연결한다.</summary>
         public virtual void Init(ArticleObj owner, SkillModel model) {
             Owner = owner;
             Model = model;
         }
 
+        /// <summary>파생 스킬이 생성한 오브젝트나 예약된 작업을 정리할 때 재정의한다.</summary>
         public virtual void Cleanup() { }
 
         public virtual UniTask<bool> TryUseAsync(CancellationToken cancellationToken) {
@@ -32,6 +37,7 @@ namespace LARD.Skill {
             return UniTask.FromResult(TryUse());
         }
 
+        /// <summary>가장 가까운 적을 찾아 즉시 이펙트를 적용하는 기본 사용 흐름이다.</summary>
         public virtual bool TryUse() {
             if (Owner == null || Owner.Model == null || Model == null || Model.Effects == null) {
                 return false;
@@ -41,6 +47,9 @@ namespace LARD.Skill {
             return targets.Count > 0 && ApplyToTarget(targets[0], EffectTargetType.NearestEnemy);
         }
 
+        /// <summary>
+        /// 대상과 실행 시점이 일치하는 즉시 이펙트를 적용하고, 피해가 발생했다면 후속 이펙트를 적용한다.
+        /// </summary>
         protected bool ApplyToTarget(IAttackTarget target, EffectTargetType damageTarget) {
             if (target == null || !target.IsAlive || Model?.Effects == null) return false;
 

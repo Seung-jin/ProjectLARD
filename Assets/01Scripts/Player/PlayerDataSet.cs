@@ -6,7 +6,7 @@ namespace LARD.Player {
         public static PlayerResource Resource { get; private set; }
 
         public UniTask Load() {
-            Resource ??= new PlayerResource();
+            Resource = new PlayerResource();
             return UniTask.CompletedTask;
         }
     }

@@ -1,7 +1,9 @@
 using UnityEngine;
 
 namespace LARD.Article {
-    // 기물의 목적지 이동 관리
+    /// <summary>
+    /// 기물을 지정한 위치로 이동시키고 이동 시작 시 진행 중인 스킬을 취소한다.
+    /// </summary>
     public sealed class MoveComponentDestination : MoveComponent {
         [SerializeField, Min(0f)] private float _arrivalDistance = 0.05f;
 

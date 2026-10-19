@@ -5,7 +5,6 @@ using UnityEngine;
 namespace LARD.Skill {
     public sealed class AeromancerSkill : SkillBase {
         public const int SkillId = 5;
-        private const float GroundRadius = 1.5f;
         private const float GroundLifetime = 3f;
         private const float ImmediateGroundLifetime = 0.25f;
         private const float TickInterval = 1f;
@@ -35,28 +34,32 @@ namespace LARD.Skill {
 
             Vector2 center = monster.transform.position;
             bool immediateDamage = false;
+            float groundRadius = 0f;
             foreach (EffectData data in Model.Effects) {
                 if (data != null && data.Effect == SkillEffectType.Damage &&
                     data.Target == EffectTargetType.AreaEnemy &&
-                    data.Timing == EffectApplicationTiming.Immediate) {
-                    immediateDamage = true;
+                    (data.Timing == EffectApplicationTiming.Immediate ||
+                     data.Timing == EffectApplicationTiming.OnTick)) {
+                    immediateDamage = data.Timing == EffectApplicationTiming.Immediate;
+                    groundRadius = data.Radius;
                     break;
                 }
             }
+            if (groundRadius <= 0f) return false;
 
             ObjSkillGround zone = Factory.SpawnObject(prefab, center, Quaternion.identity);
-            zone.InitCircle(center, GroundRadius,
+            zone.InitCircle(center, groundRadius,
                 immediateDamage ? ImmediateGroundLifetime : GroundLifetime,
                 new Color(1f, 0.85f, 0.1f, 0.6f));
 
             if (immediateDamage) {
-                foreach (IAttackTarget target in FindTargetUtil.FindTargets(center, GroundRadius)) {
+                foreach (IAttackTarget target in FindTargetUtil.FindTargets(center, groundRadius)) {
                     ApplyToTarget(target, EffectTargetType.AreaEnemy);
                 }
             } else {
                 int ownerId = Owner.Id;
                 uint leaseId = zone.LeaseId;
-                zone.Ticked += () => OnGroundTick(zone, leaseId, ownerId, center);
+                zone.Ticked += () => OnGroundTick(zone, leaseId, ownerId, center, groundRadius);
                 zone.StartTicks(TickInterval);
             }
 
@@ -66,13 +69,14 @@ namespace LARD.Skill {
             return true;
         }
 
-        private void OnGroundTick(ObjSkillGround zone, uint leaseId, int ownerId, Vector2 center) {
+        private void OnGroundTick(ObjSkillGround zone, uint leaseId, int ownerId, Vector2 center,
+                                  float radius) {
             if (zone == null || zone.IsInPool || zone.LeaseId != leaseId ||
                 Owner == null || Owner.Id != ownerId || Owner.Model == null || Model?.Effects == null) {
                 return;
             }
 
-            foreach (IAttackTarget target in FindTargetUtil.FindTargets(center, GroundRadius)) {
+            foreach (IAttackTarget target in FindTargetUtil.FindTargets(center, radius)) {
                 if (target is not MonsterObj monster || !monster.IsAlive) {
                     continue;
                 }

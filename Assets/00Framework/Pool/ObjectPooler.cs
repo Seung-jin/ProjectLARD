@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Pool;
 
 /// <summary>
-/// Unity IObjectPool을 감싼 간단한 제너릭 풀러.
+/// Unity 오브젝트 풀을 기반으로 프리팹 인스턴스의 생성, 재사용, 반환과 정리를 관리한다.
 /// </summary>
 public class ObjectPooler<T> where T : PoolingObject<T> {
 	private readonly T _prefab;
@@ -16,6 +16,7 @@ public class ObjectPooler<T> where T : PoolingObject<T> {
 		_pool = new ObjectPool<T>(CreateObject, OnGetObject, OnReleaseObject, OnDestroyObject);
 	}
 
+	/// <summary>풀에서 오브젝트를 꺼내고 대여 시 동작을 실행한다.</summary>
 	public T Get() {
 		return _pool.Get();
 	}
@@ -26,6 +27,7 @@ public class ObjectPooler<T> where T : PoolingObject<T> {
 		return poolingObject;
 	}
 
+	/// <summary>사용이 끝난 오브젝트를 연결된 풀로 반환한다.</summary>
 	public void Release(T poolingObject) {
 		if (poolingObject == null) {
 			return;
@@ -34,11 +36,12 @@ public class ObjectPooler<T> where T : PoolingObject<T> {
 		poolingObject.Release();
 	}
 
+	/// <summary>풀에 보관 중인 오브젝트를 정리한다.</summary>
 	public void Clear() {
 		_pool.Clear();
 	}
 
-	// 풀이 비어 있을 때 새 오브젝트 생성.
+	/// <summary>재사용할 오브젝트가 없으면 프리팹을 생성하고 풀을 연결한다.</summary>
 	private T CreateObject() {
 		T poolingObject = Object.Instantiate(_prefab, _parent);
 		poolingObject.SetPool(_pool);
@@ -47,20 +50,20 @@ public class ObjectPooler<T> where T : PoolingObject<T> {
 		return poolingObject;
 	}
 
-	// 풀에서 꺼낼 때 호출.
+	/// <summary>대여 상태로 전환하고 오브젝트의 활성화 동작을 호출한다.</summary>
 	private void OnGetObject(T poolingObject) {
 		poolingObject.SetPool(_pool);
 		poolingObject.SetInPool(false);
 		poolingObject.OnGetFromPool();
 	}
 
-	// 풀로 돌려보낼 때 호출.
+	/// <summary>반환 상태로 전환하고 오브젝트의 정리 동작을 호출한다.</summary>
 	private void OnReleaseObject(T poolingObject) {
 		poolingObject.SetInPool(true);
 		poolingObject.OnReleaseToPool();
 	}
 
-	// 풀이 정리될 때 실제 오브젝트 제거.
+	/// <summary>풀이 정리할 오브젝트의 파괴 동작을 호출한다.</summary>
 	private void OnDestroyObject(T poolingObject) {
 		poolingObject.OnDestroyFromPool();
 	}

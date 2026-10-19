@@ -13,6 +13,7 @@ namespace LARD.Skill {
         MoveSpeedDecrease,
         DefenseDecrease,
         SkillDamageIncrease,
+        AttackSpeedIncrease,
     }
 
     public enum EffectApplicationTiming {

@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// 포물선으로 이동
+/// 시작점과 목적지를 보간하면서 높이를 더해 포물선 경로로 이동한다.
 /// </summary>
 public class MoveComponentParabola : MoveComponent {
 	[SerializeField] private float _height = 2f;

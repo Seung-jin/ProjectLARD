@@ -10,15 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 22c72ce66a564aa69af84a59482ee5e3, type: 3}
-  m_Name: SkillModel15_Wildsoul
+  m_Name: SkillModel22
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Skill.SkillModel
-  Id: 6
-  SkillObjectPrefab: {fileID: 0}
-  Damage: 1800
+  Id: 1
   Effects:
   - Target: 0
     Effect: 0
     Timing: 0
+    Damage: 300
     HitCount: 1
-    DurationSeconds: 0
-    ValuePercent: 0

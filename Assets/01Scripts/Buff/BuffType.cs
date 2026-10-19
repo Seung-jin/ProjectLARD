@@ -1,6 +1,9 @@
 namespace LARD.Buff {
-    // 버프 종류를 구분하기 위한 열거형.
+    /// <summary>
+    /// 기물에 적용할 스킬 피해 및 공격 속도 증가 버프를 구분한다.
+    /// </summary>
     public enum BuffType {
+        SkillDamageIncrease,
+        AttackSpeedIncrease,
     }
-
 }

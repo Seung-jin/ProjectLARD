@@ -10,16 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 22c72ce66a564aa69af84a59482ee5e3, type: 3}
-  m_Name: SkillModel8_Elementalist
+  m_Name: SkillModel17
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Skill.SkillModel
   Id: 8
   SkillObjectPrefab: {fileID: 0}
-  Damage: 430
   Effects:
   - Target: 3
     Effect: 0
     Timing: 0
+    Damage: 1900
     HitCount: 1
+    MaxTargets: 0
     DurationSeconds: 0
     ValuePercent: 0
     Radius: 1.5
+    ConeAngleDegrees: 0

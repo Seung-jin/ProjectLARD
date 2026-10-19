@@ -1,16 +1,20 @@
 using LARD.Article;
 using LARD.Skill;
+using LARD.Buff;
 using LARD.Upgrade;
 using UnityEngine;
 
 namespace LARD.Battle {
+    /// <summary>
+    /// 스킬 피해에 강화, 버프, 방어력과 받는 피해 증가 효과를 반영해 최종 피해를 적용한다.
+    /// </summary>
     public static class DamageLogic {
         public static void ApplyDamage(ArticleObj attacker, float skillDamage, IAttackTarget target) {
             ArticleModel model = attacker.Model;
             float baseDamage = Mathf.Max(0f, skillDamage);
             int upgradeLevel = 0;
             float upgradePercent = GetUpgradePercent(model, out upgradeLevel);
-            float skillBuffPercent = attacker.EffectController.SkillDamageIncreasePercent;
+            float skillBuffPercent = attacker.BuffController.GetTotalValue(BuffType.SkillDamageIncrease);
             float defense = target.DefensePercent;
             float damageTakenIncrease = target is LARD.Monster.MonsterObj affectedMonster
                 ? affectedMonster.EffectController.DamageTakenIncreasePercent : 0f;
@@ -37,7 +41,14 @@ namespace LARD.Battle {
         }
 
         public static float CalculateDamage(ArticleModel attacker, float defensePercent) {
-            float baseDamage = attacker.Skill != null ? Mathf.Max(0f, attacker.Skill.Damage) : 0f;
+            float baseDamage = 0f;
+            if (attacker.Skill?.Effects != null) {
+                foreach (EffectData effect in attacker.Skill.Effects) {
+                    if (effect == null || effect.Effect != SkillEffectType.Damage) continue;
+                    baseDamage = Mathf.Max(0f, effect.Damage);
+                    break;
+                }
+            }
             float upgradePercent = GetUpgradePercent(attacker, out _);
             float upgradedDamage = baseDamage * (1f + upgradePercent / 100f);
             return Mathf.Floor(upgradedDamage * (1f - Mathf.Clamp(defensePercent, 0f, 100f) / 100f));

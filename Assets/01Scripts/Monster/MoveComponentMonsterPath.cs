@@ -2,6 +2,9 @@ using LARD.Battle;
 using UnityEngine;
 
 namespace LARD.Monster {
+    /// <summary>
+    /// 몬스터를 맵 경유점에 따라 이동시키고 이동 속도 감소 효과를 반영한다.
+    /// </summary>
     public sealed class MoveComponentMonsterPath : MoveComponent {
         [SerializeField, Min(0f)] private float _arrivalDistance = 0.05f;
 

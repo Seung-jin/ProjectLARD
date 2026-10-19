@@ -2,12 +2,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace LARD.Skill {
+	/// <summary>
+	/// 스킬 식별자, 생성할 오브젝트와 순서대로 평가할 이펙트 설정을 보관하는 에셋이다.
+	/// </summary>
 	[CreateAssetMenu(fileName = "SkillModel", menuName = "Data/Skill/Model")]
 	public sealed class SkillModel : ScriptableObject {
 		public int Id;
 		public SkillObjBase SkillObjectPrefab;
-		[Min(0f), Tooltip("Fixed damage dealt by each damage effect hit before upgrades, buffs, and defense.")]
-		public float Damage;
 		public List<EffectData> Effects = new();
 	}
 }

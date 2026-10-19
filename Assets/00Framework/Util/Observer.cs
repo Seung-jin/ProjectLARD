@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 
 namespace LSJ.Util {
+	/// <summary>
+	/// 열거형 이벤트를 구독·해제·발행하여 캐릭터 상태 변화에 따른 로직 처리와 UI 갱신을 구독자에게 전달한다.
+	/// </summary>
 	public class Observer<T> where T : Enum {
 		// 인자 없는 델리게이트
 		public delegate void EventHandler();

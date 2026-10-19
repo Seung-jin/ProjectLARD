@@ -8,6 +8,9 @@ using LARD.Monster;
 using UnityEngine;
 
 namespace LARD.Stage {
+    /// <summary>
+    /// 기물 배치와 이동, 스테이지별 몬스터 생성, 제한 시간 및 승리 조건을 관리한다.
+    /// </summary>
     public static class StageLogic {
         private static readonly TimeSpan MonsterSpawnInterval = TimeSpan.FromSeconds(0.5);
         private const int ClearedStageWaitSeconds = 20;
@@ -119,6 +122,7 @@ namespace LARD.Stage {
             Debug.Log($"[BattleInput] Drag selected {_selectedArticles.Count} articles.");
         }
 
+        /// <summary>소환 위치를 확보하고 기존 기물의 배치를 조정한 뒤 새 기물을 생성한다.</summary>
         public static bool TrySummonArticle(int articleId, out ArticleObj article) {
             article = null;
             if (!_init || _map == null || _articleFactory == null) {
@@ -266,6 +270,7 @@ namespace LARD.Stage {
             }
         }
 
+        /// <summary>선택한 기물을 목적지 주변의 편대 위치로 이동시킨다.</summary>
         public static void MoveSelectedArticles(Vector2 destination) {
             if (!_init) {
                 return;
@@ -319,6 +324,7 @@ namespace LARD.Stage {
             }
         }
 
+        /// <summary>스테이지마다 몬스터 생성과 제한 시간을 함께 진행하고 종료 조건을 처리한다.</summary>
         public static async UniTask RunAsync(CancellationToken cancellationToken) {
             if (!_init) {
                 throw new InvalidOperationException("StageLogic is not initialized.");

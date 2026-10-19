@@ -10,23 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 22c72ce66a564aa69af84a59482ee5e3, type: 3}
-  m_Name: SkillModel7_Sorceress
+  m_Name: SkillModel8
   m_EditorClassIdentifier: Assembly-CSharp::LARD.Skill.SkillModel
-  Id: 7
-  SkillObjectPrefab: {fileID: 100003, guid: fbd1860582df4ba691ac06c827ebbfbf, type: 3}
-  Damage: 450
+  Id: 8
+  SkillObjectPrefab: {fileID: 0}
   Effects:
-  - Target: 2
+  - Target: 3
     Effect: 0
-    Timing: 2
+    Timing: 0
+    Damage: 500
     HitCount: 1
+    MaxTargets: 0
     DurationSeconds: 0
     ValuePercent: 0
-    Radius: 0
-  - Target: 1
-    Effect: 3
-    Timing: 1
-    HitCount: 1
-    DurationSeconds: 3
-    ValuePercent: 10
-    Radius: 0
+    Radius: 1.5
+    ConeAngleDegrees: 0

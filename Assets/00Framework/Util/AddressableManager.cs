@@ -8,6 +8,9 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.U2D;
 
 namespace LSJ.Util {
+	/// <summary>
+	/// Addressables 에셋 로드, 프리팹 생성과 스프라이트 아틀라스 캐시를 관리한다.
+	/// </summary>
 	public static class AddressableManager {
 		// 초기화 여부 체크
 		private static bool _isInit = false;

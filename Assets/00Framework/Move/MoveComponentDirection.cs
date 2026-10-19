@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 /// <summary>
-/// 지정된 방향으로 이동
+/// 설정한 방향으로 일정 속도로 이동한다.
 /// </summary>
 public class MoveComponentDirection : MoveComponent {
 	private Vector2 _direction;

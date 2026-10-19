@@ -2,6 +2,9 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
+/// <summary>
+/// 방향 이동, 대상 추적, 포물선 이동을 한 장면에서 실행하는 예제다.
+/// </summary>
 public class MoveExample : MonoBehaviour {
 	[SerializeField] private List<MoveComponent> _moveComponents;
 

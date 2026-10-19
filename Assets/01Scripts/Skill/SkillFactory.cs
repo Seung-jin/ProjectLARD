@@ -13,10 +13,8 @@ namespace LARD.Skill {
             }
 
             SkillBase skill = model.Id switch {
-                ArtistSkill.SkillId or 7 => ScriptableObject.CreateInstance<ArtistSkill>(),
-                AeromancerSkill.SkillId => ScriptableObject.CreateInstance<AeromancerSkill>(),
-                8 => ScriptableObject.CreateInstance<ElementalistSkill>(),
-                12 => ScriptableObject.CreateInstance<ConeAttackSkill>(),
+                5 or 8 => ScriptableObject.CreateInstance<ElementalistSkill>(),
+                7 => ScriptableObject.CreateInstance<AttachedDamageSkill>(),
                 _ => ScriptableObject.CreateInstance<SkillBase>(),
             };
             skill.SetFactory(this);

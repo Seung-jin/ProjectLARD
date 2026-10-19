@@ -16,8 +16,8 @@ MonoBehaviour:
   Race: 1
   Tier: 2
   NextTierModelId: 18
-  AttackSpeed: 1.2
+  AttackSpeed: 0.7
   MoveSpeed: 3
-  Range: 5
+  Range: 2.5
   Prefab: {fileID: 900000000000000002, guid: 3022b7fbe75d4f7eaf3ff76edb69a737, type: 3}
   Skill: {fileID: 11400000, guid: 06aa5e5edb464405a2d8302ef5b71289, type: 2}

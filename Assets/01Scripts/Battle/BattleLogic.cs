@@ -3,6 +3,9 @@ using LARD.Player;
 using LARD.Stat;
 
 namespace LARD.Battle {
+    /// <summary>
+    /// 몬스터 처치 보상과 스테이지 시간 만료 시 패배 조건을 판정한다.
+    /// </summary>
     public sealed class BattleLogic {
         private readonly BattleManager _battleManager;
 

@@ -5,6 +5,9 @@ using LARD.Stat;
 using UnityEngine;
 
 namespace LARD.Article {
+    /// <summary>
+    /// 선택한 기물의 승급·판매 조건과 재화 처리, 오브젝트 교체를 담당한다.
+    /// </summary>
     public sealed class ArticleLogic {
         private readonly IList<ArticleObj> _selectedArticles;
         private readonly ArticleFactory _factory;
@@ -14,6 +17,7 @@ namespace LARD.Article {
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
         }
 
+        /// <summary>승급 조건과 비용을 확인하고 확률 판정에 성공하면 기물을 다음 티어로 교체한다.</summary>
         public bool TryUpgradeSelectedArticle() {
             if (_selectedArticles.Count != 1) {
                 Debug.LogWarning($"[ArticlePromotion] Logic failed: exactly one article must be selected (selected: {_selectedArticles.Count}).");
@@ -79,6 +83,7 @@ namespace LARD.Article {
             return TryGetUpgradeCost(article, out cost, out _);
         }
 
+        /// <summary>선택한 기물을 반환하고 판매 대금을 지급한다.</summary>
         public bool TrySellSelectedArticle() {
             if (_selectedArticles.Count != 1) {
                 Debug.LogWarning($"[ArticleSale] Exactly one article must be selected (selected: {_selectedArticles.Count}).");

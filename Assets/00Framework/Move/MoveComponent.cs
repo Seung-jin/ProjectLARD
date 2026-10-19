@@ -1,6 +1,8 @@
 using UnityEngine;
 
-// 오브젝트 이동 공통 처리
+/// <summary>
+/// Rigidbody2D 기반 이동을 고정 주기마다 실행하고 이동 속도를 관리하는 공통 컴포넌트다.
+/// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 public abstract class MoveComponent : MonoBehaviour {
 	[SerializeField] protected float _moveSpeed = 5f;
@@ -18,7 +20,9 @@ public abstract class MoveComponent : MonoBehaviour {
 		Move();
 	}
 
+	/// <summary>구체적인 이동 방식에 따라 속도 또는 위치를 갱신한다.</summary>
 	public abstract void Move();
+	/// <summary>현재 물리 이동 속도를 0으로 설정한다.</summary>
 	public abstract void Stop();
 
 	public void SetMoveSpeed(float moveSpeed) {

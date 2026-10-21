@@ -10,19 +10,23 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 100000, guid: 8a8ac2e19d3042e8ad9fe3c8472b5162, type: 3}
       propertyPath: m_Name
-      value: Article14_Aeromancer
+      value: ArticleObj_11
       objectReference: {fileID: 0}
     - target: {fileID: 200002, guid: 8a8ac2e19d3042e8ad9fe3c8472b5162, type: 3}
       propertyPath: m_Sprite
       value:
-      objectReference: {fileID: 21300000, guid: 83f14e1aec4c404d92d602212062692a, type: 3}
-    - target: {fileID: 200001, guid: 8a8ac2e19d3042e8ad9fe3c8472b5162, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1.2
+      objectReference: {fileID: 21300000, guid: 8e8fccb1933d45b28a8ee40ce2fc8dba, type: 3}
+    - target: {fileID: 200002, guid: 8a8ac2e19d3042e8ad9fe3c8472b5162, type: 3}
+      propertyPath: m_Color.r
+      value: 0.55
       objectReference: {fileID: 0}
-    - target: {fileID: 200001, guid: 8a8ac2e19d3042e8ad9fe3c8472b5162, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 1.2
+    - target: {fileID: 200002, guid: 8a8ac2e19d3042e8ad9fe3c8472b5162, type: 3}
+      propertyPath: m_Color.g
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 200002, guid: 8a8ac2e19d3042e8ad9fe3c8472b5162, type: 3}
+      propertyPath: m_Color.b
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

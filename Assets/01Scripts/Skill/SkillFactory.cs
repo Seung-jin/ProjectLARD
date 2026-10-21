@@ -35,5 +35,4 @@ namespace LARD.Skill {
             return (T)pool.Get(position, rotation);
         }
     }
-
 }

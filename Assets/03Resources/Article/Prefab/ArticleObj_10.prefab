@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 100000, guid: 8a8ac2e19d3042e8ad9fe3c8472b5162, type: 3}
       propertyPath: m_Name
-      value: Article10_Berserker
+      value: ArticleObj_10
       objectReference: {fileID: 0}
     - target: {fileID: 200002, guid: 8a8ac2e19d3042e8ad9fe3c8472b5162, type: 3}
       propertyPath: m_Sprite

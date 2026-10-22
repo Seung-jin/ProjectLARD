@@ -14,7 +14,7 @@ namespace LARD.Stage {
     public static class StageLogic {
         private static readonly TimeSpan MonsterSpawnInterval = TimeSpan.FromSeconds(0.5);
         private const int ClearedStageWaitSeconds = 20;
-        private static readonly int ArticleSelectionLayerMask = LayerMask.GetMask("ArticleSelection");
+        private static int _articleSelectionLayerMask;
         private const float PlacementGap = 0.05f;
 
         private static Map _map;
@@ -48,6 +48,7 @@ namespace LARD.Stage {
             }
 
             _map = map;
+            _articleSelectionLayerMask = LayerMask.GetMask("ArticleSelection");
             _formationGap = formationGap;
             _selectedArticles = selectedArticles ?? throw new ArgumentNullException(nameof(selectedArticles));
             _startStage = startStage ?? throw new ArgumentNullException(nameof(startStage));
@@ -85,7 +86,7 @@ namespace LARD.Stage {
                 return;
             }
 
-            Collider2D[] hits = Physics2D.OverlapPointAll(position, ArticleSelectionLayerMask);
+            Collider2D[] hits = Physics2D.OverlapPointAll(position, _articleSelectionLayerMask);
             Debug.Log($"[BattleInput] Point query at {position} found {hits.Length} colliders.");
             ClearSelection();
 
@@ -108,7 +109,7 @@ namespace LARD.Stage {
 
             Vector2 min = Vector2.Min(start, end);
             Vector2 max = Vector2.Max(start, end);
-            Collider2D[] hits = Physics2D.OverlapAreaAll(min, max, ArticleSelectionLayerMask);
+            Collider2D[] hits = Physics2D.OverlapAreaAll(min, max, _articleSelectionLayerMask);
             Debug.Log($"[BattleInput] Area query from {min} to {max} found {hits.Length} colliders.");
 
             ClearSelection();

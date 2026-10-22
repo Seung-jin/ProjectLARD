@@ -18,5 +18,5 @@ MonoBehaviour:
   AttackSpeed: 1.2
   MoveSpeed: 3
   Range: 2.5
-  Prefab: {fileID: 900000000000000002, guid: 3f95bed1eb8b474488ef64e95256ecd2, type: 3}
+  Prefab: {fileID: 900000000000100005, guid: 3f95bed1eb8b474488ef64e95256ecd2, type: 3}
   Skill: {fileID: 11400000, guid: e5c3255b47c94b99a7f9ad533842d928, type: 2}

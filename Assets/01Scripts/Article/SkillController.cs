@@ -23,7 +23,10 @@ namespace LARD.Article {
 
         /// <summary>이동 중이 아닐 때 현재 스킬의 사용을 시도한다.</summary>
         public bool TryUse() {
-            return Skill != null && !IsMoving() && Skill.TryUse();
+            if (Skill == null || IsMoving()) return false;
+            bool used = Skill.TryUse();
+            if (used) Skill.Owner?.GraphicController?.PlayAttack();
+            return used;
         }
 
         /// <summary>기존 스킬을 정리하고 새 스킬을 연결하며 활성 상태면 공격 루프를 시작한다.</summary>
@@ -106,7 +109,10 @@ namespace LARD.Article {
                     using var skillCancellation = CancellationTokenSource.CreateLinkedTokenSource(token);
                     _skillUseCancellation = skillCancellation;
                     try {
-                        await skill.TryUseAsync(skillCancellation.Token);
+                        bool used = await skill.TryUseAsync(skillCancellation.Token);
+                        if (used && !token.IsCancellationRequested) {
+                            skill.Owner?.GraphicController?.PlayAttack();
+                        }
                     } catch (OperationCanceledException) when (skillCancellation.IsCancellationRequested) {
                         // Movement or despawning interrupted the current skill.
                     } finally {

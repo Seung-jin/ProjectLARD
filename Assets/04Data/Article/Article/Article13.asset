@@ -15,6 +15,7 @@ MonoBehaviour:
   Id: 13
   Race: 0
   Tier: 3
+  NextTierModelId: 0
   AttackSpeed: 1.1
   MoveSpeed: 3
   Range: 2.75

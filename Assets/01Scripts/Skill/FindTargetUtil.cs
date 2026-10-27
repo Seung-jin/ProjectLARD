@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace LARD.Skill {
+	/// <summary>범위 내 공격 대상 검색과 거리순 정렬.</summary>
 	public static class FindTargetUtil {
 		public static List<IAttackTarget> FindTargets(Vector2 center, float range, bool nearestFirst = true) {
 			List<IAttackTarget> targets = new();

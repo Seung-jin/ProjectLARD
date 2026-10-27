@@ -1,6 +1,7 @@
 using UnityEngine;
 
 namespace LARD.Battle {
+    /// <summary>기물 배치 영역과 몬스터 경로 좌표 제공.</summary>
     public sealed class Map : MonoBehaviour {
         public const int MonsterWaypointCount = 4;
 

@@ -15,6 +15,7 @@ namespace LARD.Battle {
         PromoteToTier2,
         PromoteToTier3,
         PromoteTier2ThenTier3,
+        AlwaysPromote,
     }
 
     [Serializable]
@@ -84,7 +85,7 @@ namespace LARD.Battle {
         private int _lastStageRemainingSeconds;
         private bool _nextTier2ActionIsPromotion = true;
         private ArticleRace[] _selectedUpgradeRaces;
-        private readonly Dictionary<int, Vector2> _placements = new();
+        private readonly AutoBattlePlacementLogic _placement = new();
 
         public event Action<AutoBattleRunResult> Completed;
 
@@ -149,35 +150,35 @@ namespace LARD.Battle {
             PlayerResource resource = PlayerDataSet.Resource;
             if (resource == null) return false;
 
+            if (_strategy == AutoBattleStrategy.AlwaysPromote) {
+                if (TryPromoteCandidate()) return true;
+                return TrySummonWithSilver(resource);
+            }
+
             if (_strategy == AutoBattleStrategy.PromoteToTier3) {
                 if (_currentStage <= Tier3StrategySummonOnlyThroughStage)
                     return TrySummonWithSilver(resource);
                 if (_currentStage <= Tier3StrategyAlternatingThroughStage)
                     return SpendAlternatingTier2Silver(resource);
                 if (TryPromoteCandidate()) return true;
-                return AllArticlesAtTargetTier() && TrySummonWithSilver(resource);
+                return TrySummonWithSilver(resource);
             }
 
             if (_strategy != AutoBattleStrategy.SummonOnly && !_summonBlocked &&
-                CountActiveArticles() < PromotionStrategyArticleTarget && resource.Silver >= 10) {
+                CountActiveArticles() < PromotionStrategyArticleTarget &&
+                resource.Silver >= ShopDataSet.GetConstModel(ShopId).PurchaseCost) {
                 if (TrySummonWithSilver(resource)) return true;
             }
 
             if (_strategy != AutoBattleStrategy.SummonOnly && TryPromoteCandidate()) return true;
 
-            if (_summonBlocked || resource.Silver < 10) return false;
-            if (_strategy != AutoBattleStrategy.SummonOnly && !AllArticlesAtTargetTier()) return false;
             return TrySummonWithSilver(resource);
         }
 
         private bool SpendAlternatingTier2Silver(PlayerResource resource) {
             if (_nextTier2ActionIsPromotion) {
-                ArticleObj candidate = FindPromotionCandidate();
-                if (candidate == null) {
+                if (FindPromotionCandidates() == null) {
                     _nextTier2ActionIsPromotion = false;
-                } else if (!ArticleLogic.TryGetUpgradeCost(candidate, out int cost) ||
-                           resource.Silver < cost) {
-                    return false;
                 } else if (TryPromoteCandidate()) {
                     _nextTier2ActionIsPromotion = false;
                     return true;
@@ -195,27 +196,26 @@ namespace LARD.Battle {
         }
 
         private bool TryPromoteCandidate() {
-            ArticleObj candidate = FindPromotionCandidate();
-            if (candidate == null || !ArticleLogic.TryGetUpgradeCost(candidate, out int cost) ||
-                PlayerDataSet.Resource == null || PlayerDataSet.Resource.Silver < cost) return false;
-            int previousId = candidate.Id;
+            List<ArticleObj> candidates = FindPromotionCandidates();
+            if (candidates == null) return false;
+            int previousId = candidates[0].Id;
             StageLogic.ClearSelection();
-            StageLogic.Select(candidate);
+            foreach (ArticleObj candidate in candidates) StageLogic.Select(candidate);
             _result.promotionAttempts++;
-            if (_battle.TryUpgradeSelectedArticle()) {
+            bool promoted = _battle.TryUpgradeSelectedArticles();
+            if (promoted) {
                 _result.promotions++;
-                if (_placements.TryGetValue(previousId, out Vector2 placement)) {
-                    _placements.Remove(previousId);
-                    if (_battle.SelectedArticle != null)
-                        _placements[_battle.SelectedArticle.Id] = placement;
-                }
+                _summonBlocked = false;
+                if (_battle.SelectedArticle != null)
+                    _placement.Transfer(previousId, _battle.SelectedArticle.Id);
             }
             StageLogic.ClearSelection();
-            return true; // A failed promotion still spent silver.
+            return promoted;
         }
 
         private bool TrySummonWithSilver(PlayerResource resource) {
-            if (_summonBlocked || resource.Silver < 10) return false;
+            ShopConstModel shop = ShopDataSet.GetConstModel(ShopId);
+            if (_summonBlocked || shop == null || resource.Silver < shop.PurchaseCost) return false;
             if (TrySummon()) return true;
             _summonBlocked = true;
             _result.summonBlocked = true;
@@ -231,15 +231,6 @@ namespace LARD.Battle {
             return count;
         }
 
-        private bool AllArticlesAtTargetTier() {
-            int targetTier = GetTargetTier();
-            foreach (ArticleObj article in FindObjectsByType<ArticleObj>()) {
-                if (article != null && article.gameObject.activeInHierarchy && !article.IsInPool &&
-                    article.Tier < targetTier) return false;
-            }
-            return true;
-        }
-
         private int GetTargetTier() {
             if (_strategy == AutoBattleStrategy.PromoteToTier2 ||
                 (_strategy == AutoBattleStrategy.PromoteTier2ThenTier3 &&
@@ -249,20 +240,32 @@ namespace LARD.Battle {
             return 3;
         }
 
-        private ArticleObj FindPromotionCandidate() {
+        private List<ArticleObj> FindPromotionCandidates() {
             int targetTier = GetTargetTier();
-            ArticleObj best = null;
+            List<ArticleObj> active = new();
             foreach (ArticleObj article in FindObjectsByType<ArticleObj>()) {
                 if (article == null || !article.gameObject.activeInHierarchy || article.IsInPool || article.Model == null)
                     continue;
-                if (article.Tier == 1 && !ArticleDataSet.HasArticle(article.Model.Race, 2)) continue;
-                if (article.Tier == 2 && (targetTier < 3 ||
-                    !ArticleDataSet.TryGetNextTierModel(article.Model, 3, out _))) continue;
-                if (article.Tier > 2) continue;
-                if (best == null || article.Tier > best.Tier ||
-                    (article.Tier == best.Tier && article.Id < best.Id)) best = article;
+                if (article.Tier < targetTier) active.Add(article);
             }
-            return best;
+            active.Sort((left, right) => left.Id.CompareTo(right.Id));
+
+            for (int tier = Mathf.Min(2, targetTier - 1); tier >= 1; tier--) {
+                foreach (ArticleRace race in new[] { ArticleRace.Beastkin, ArticleRace.Mage, ArticleRace.Warrior }) {
+                    List<ArticleObj> group = active.FindAll(article => article.Tier == tier && article.Model.Race == race);
+                    if (group.Count < 3) continue;
+                    List<ArticleObj> candidates = group.GetRange(0, 3);
+                    if (ArticleLogic.CanPromoteArticles(candidates, out _)) return candidates;
+                }
+
+                List<ArticleObj> mixed = new();
+                foreach (ArticleRace race in new[] { ArticleRace.Beastkin, ArticleRace.Mage, ArticleRace.Warrior }) {
+                    ArticleObj article = active.Find(item => item.Tier == tier && item.Model.Race == race);
+                    if (article != null) mixed.Add(article);
+                }
+                if (ArticleLogic.CanPromoteArticles(mixed, out _)) return mixed;
+            }
+            return null;
         }
 
         private bool TrySummon() {
@@ -282,30 +285,7 @@ namespace LARD.Battle {
             if (newest == null) return;
 
             Map map = FindAnyObjectByType<Map>();
-            if (map == null) return;
-            for (int ring = 3; ring >= 0; ring--) {
-                for (int y = -ring; y <= ring; y++) {
-                    for (int x = -ring; x <= ring; x++) {
-                        if (Mathf.Max(Mathf.Abs(x), Mathf.Abs(y)) != ring) continue;
-                        Vector2 spot = map.ClampArticlePosition(map.ArticleSpawnPosition +
-                            new Vector2(x * 0.7f, y * 0.7f), Vector2.one * 0.25f);
-                        bool occupied = false;
-                        foreach (Vector2 assigned in _placements.Values) {
-                            if ((spot - assigned).sqrMagnitude < 0.6f * 0.6f) {
-                                occupied = true;
-                                break;
-                            }
-                        }
-                        if (occupied) continue;
-                        _placements[newest.Id] = spot;
-                        StageLogic.ClearSelection();
-                        StageLogic.Select(newest);
-                        _battle.MoveSelectedArticles(spot);
-                        StageLogic.ClearSelection();
-                        return;
-                    }
-                }
-            }
+            _placement.Place(map, newest, _currentStage >= 4);
         }
 
         private void SpendGold() {
@@ -331,42 +311,22 @@ namespace LARD.Battle {
         private void OnStageChanged(StageModel stage) {
             if (_currentStage > 0) CaptureStage(true);
             if (_strategy == AutoBattleStrategy.PromoteToTier3 &&
-                _currentStage == Tier3StrategySummonOnlyThroughStage)
+                _currentStage == Tier3StrategySummonOnlyThroughStage && stage.Id >= 4)
                 ChooseUpgradeRaces();
+            if (_currentStage < 4 && stage.Id >= 4)
+                _placement.Place(FindAnyObjectByType<Map>(), null, true);
             _currentStage = stage.Id;
             _stageStartKills = _battle.MonsterKillCount;
             _lastStageRemainingSeconds = Mathf.CeilToInt(stage.StageTime);
         }
 
         private void ChooseUpgradeRaces() {
-            Dictionary<ArticleRace, int> scores = new();
-            List<ArticleRace> races = new();
-            foreach (ArticleRace race in Enum.GetValues(typeof(ArticleRace))) {
-                scores[race] = 0;
-                races.Add(race);
-            }
-
-            foreach (ArticleObj article in FindObjectsByType<ArticleObj>()) {
-                if (article == null || !article.gameObject.activeInHierarchy || article.IsInPool ||
-                    article.Model == null || !scores.ContainsKey(article.Model.Race)) continue;
-                scores[article.Model.Race] += article.Tier switch {
-                    1 => 1,
-                    2 => 5,
-                    3 => 20,
-                    _ => 0,
-                };
-            }
-
-            races.Sort((a, b) => {
-                int scoreOrder = scores[b].CompareTo(scores[a]);
-                return scoreOrder != 0 ? scoreOrder : a.CompareTo(b);
-            });
+            List<ArticleRace> races = _placement.GetRacesByCount();
             _selectedUpgradeRaces = new[] { races[0], races[1] };
             _result.upgradeRace1 = races[0].ToString();
             _result.upgradeRace2 = races[1].ToString();
-            Debug.Log($"[AutoBattleTest] Stage 3 race scores: " +
-                $"{races[0]}={scores[races[0]]}, {races[1]}={scores[races[1]]}, " +
-                $"{races[2]}={scores[races[2]]}. Upgrading {races[0]} and {races[1]}.");
+            Debug.Log($"[AutoBattleTest] Stage 4 upgrade races by article count: " +
+                $"{races[0]} and {races[1]}.");
         }
 
         private void OnStageTimeChanged(int seconds) {

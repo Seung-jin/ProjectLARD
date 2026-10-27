@@ -5,6 +5,7 @@ using LARD.Stat;
 using UnityEngine;
 
 namespace LARD.Shop {
+    /// <summary>실버 소비와 확률 기반 기물 소환 처리.</summary>
     public static class ShopLogic {
         private const int ShopConstId = 1;
         private const int ShopProbId = 1;

@@ -15,4 +15,4 @@ MonoBehaviour:
   Race: 2
   Level: 15
   AttackPowerIncreasePercent: 75
-  NextLevelCost: 0
+  NextLevelCost: 18

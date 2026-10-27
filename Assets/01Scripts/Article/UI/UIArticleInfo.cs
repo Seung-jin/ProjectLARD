@@ -54,24 +54,28 @@ namespace LARD.Article {
 		}
 
 		private void BuildPromotion() {
-			if (!ArticleLogic.TryGetUpgradeCost(_article, out int cost)) {
-				_promotionCostText.text = "NO PROMOTION";
+			BattleManager manager = BattleManager.Instance;
+			if (manager == null || !manager.CanUpgradeSelectedArticles(out _)) {
+				_promotionCostText.text = manager != null && manager.SelectedArticles.Count == 3
+					? "INVALID COMBINATION" : "SELECT 3 ARTICLES";
 				_promotionBtn.interactable = false;
 				return;
 			}
 
-			_promotionCostText.text = $"COST {cost:N0} SILVER";
-			_promotionBtn.interactable = PlayerDataSet.Resource != null && PlayerDataSet.Resource.Silver >= cost;
+			_promotionCostText.text = "PROMOTE 3 ARTICLES";
+			_promotionBtn.interactable = true;
 		}
 
 		private void OnClickPromotionBtn() {
 			if (BattleManager.Instance != null) {
-				BattleManager.Instance.TryUpgradeSelectedArticle();
+				BattleManager.Instance.TryUpgradeSelectedArticles();
 			}
 		}
 
 		private void BuildSale() {
-			if (!ArticleLogic.TryGetSaleCost(_article, out int cost)) {
+			BattleManager manager = BattleManager.Instance;
+			if (manager == null || manager.SelectedArticle != _article ||
+			    !ArticleLogic.TryGetSaleCost(_article, out int cost)) {
 				_saleCostText.text = "NO SALE";
 				_saleBtn.interactable = false;
 				return;

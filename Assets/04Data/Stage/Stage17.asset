@@ -16,6 +16,6 @@ MonoBehaviour:
   StageTime: 120
   MonsterCount: 60
   MonsterId: 1
-  MonsterHealth: 61800
+  MonsterHealth: 173000
   BossMonsterId: 0
   BossMonsterHealth: 0

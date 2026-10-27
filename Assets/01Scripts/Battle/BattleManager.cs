@@ -230,9 +230,21 @@ namespace LARD.Battle {
 		}
 
 		// 선택 유닛 강화 시도
-		public bool TryUpgradeSelectedArticle() {
-			bool upgraded = _articleLogic.TryUpgradeSelectedArticle();
+		public bool CanUpgradeSelectedArticles(out string reason) =>
+			_articleLogic.CanUpgradeSelectedArticles(out reason);
+
+		public bool TryUpgradeSelectedArticles() {
+			bool upgraded = _articleLogic.TryUpgradeSelectedArticles();
 			SelectionChanged?.Invoke(SelectedArticle);
+			return upgraded;
+		}
+
+		public bool CanUpgradeAvailableArticles(int targetTier, ArticleRace? race) =>
+			_articleLogic.CanUpgradeAvailableArticles(targetTier, race);
+
+		public bool TryUpgradeAvailableArticles(int targetTier, ArticleRace? race) {
+			bool upgraded = _articleLogic.TryUpgradeAvailableArticles(targetTier, race);
+			if (upgraded) SelectionChanged?.Invoke(SelectedArticle);
 			return upgraded;
 		}
 

@@ -33,6 +33,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - Upgrade
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 10856f597d25ec6f803f9196eb7d304c
+    m_Address: Assets/04Data/Upgrade/UpgradeModel_Sylin_17.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Upgrade
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 163be61c7ba247e99732d28c491d8824
     m_Address: Assets/04Data/Upgrade/UpgradeModel_Shushire_9.asset
     m_ReadOnly: 0
@@ -81,8 +87,20 @@ MonoBehaviour:
     m_SerializedLabels:
     - Upgrade
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 411e4ec7299f802fc321cdede4c2c67a
+    m_Address: Assets/04Data/Upgrade/UpgradeModel_Yoz_20.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Upgrade
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 41c2fdcb70204bb3b354deab9e9aa0e1
     m_Address: Assets/04Data/Upgrade/UpgradeModel_Sylin_10.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Upgrade
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 41e0f3767cba4daa989fcff4dbc4268b
+    m_Address: Assets/04Data/Upgrade/UpgradeModel_Sylin_19.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - Upgrade
@@ -147,6 +165,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - Upgrade
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6516232c65031630e0e9478ece0029ce
+    m_Address: Assets/04Data/Upgrade/UpgradeModel_Shushire_19.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Upgrade
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6a0053d3e002b9538c2356a7f2c92a51
     m_Address: Assets/04Data/Upgrade/UpgradeModel_Sylin_3.asset
     m_ReadOnly: 0
@@ -155,6 +179,12 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6ceb322dd24d42c4b9d9522791139c99
     m_Address: Assets/04Data/Upgrade/UpgradeModel_Shushire_4.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Upgrade
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6e13ca4f1869ff3f813e0eec10546d58
+    m_Address: Assets/04Data/Upgrade/UpgradeModel_Shushire_17.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - Upgrade
@@ -218,8 +248,26 @@ MonoBehaviour:
     m_SerializedLabels:
     - Upgrade
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8c2a9d98474738d86fb6f476725e14f5
+    m_Address: Assets/04Data/Upgrade/UpgradeModel_Sylin_18.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Upgrade
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9567a1951da3405dbafd3e204dad27b5
     m_Address: Assets/04Data/Upgrade/UpgradeModel_Sylin_13.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Upgrade
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9599415a5acf024f48d9693a448df56c
+    m_Address: Assets/04Data/Upgrade/UpgradeModel_Shushire_16.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Upgrade
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9850fc9a9dff53fbbc3e83315a7e824a
+    m_Address: Assets/04Data/Upgrade/UpgradeModel_Shushire_20.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - Upgrade
@@ -266,6 +314,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - Upgrade
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b0592f0e91bf76828d1091ccb284622e
+    m_Address: Assets/04Data/Upgrade/UpgradeModel_Yoz_19.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Upgrade
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b08a266929ef46bcaed58379a442b16a
     m_Address: Data/Article
     m_ReadOnly: 0
@@ -274,6 +328,18 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b179523900eb481196e475b0e6ce8dfb
     m_Address: Assets/04Data/Upgrade/UpgradeModel_Shushire_11.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Upgrade
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b1b83b159f33adf72d40f6aab0a0b33f
+    m_Address: Assets/04Data/Upgrade/UpgradeModel_Sylin_16.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Upgrade
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bf502389df3734a90bc1333095b5e2b3
+    m_Address: Assets/04Data/Upgrade/UpgradeModel_Sylin_20.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - Upgrade
@@ -326,14 +392,38 @@ MonoBehaviour:
     m_SerializedLabels:
     - Upgrade
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f4bfcd4d372d9cd79958a7c24466c6b4
+    m_Address: Assets/04Data/Upgrade/UpgradeModel_Shushire_18.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Upgrade
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f578a7479ff2259f5e335ca51aed3e46
+    m_Address: Assets/04Data/Upgrade/UpgradeModel_Yoz_17.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Upgrade
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f62a32be64744592843264931f99b6dc
     m_Address: Assets/04Data/Upgrade/UpgradeModel_Sylin_15.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - Upgrade
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f79ab9f5a27c0b85b8332103d8403428
+    m_Address: Assets/04Data/Upgrade/UpgradeModel_Yoz_18.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Upgrade
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f96c1c28450cf2b52f6a461c30fc1806
     m_Address: Assets/04Data/Upgrade/UpgradeModel_Yoz_2.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Upgrade
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fea4cf0830b36a1a1aa3f966c9d23dc8
+    m_Address: Assets/04Data/Upgrade/UpgradeModel_Yoz_16.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - Upgrade

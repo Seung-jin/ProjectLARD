@@ -11,11 +11,11 @@ using UnityEngine.SceneManagement;
 
 namespace LARD.Battle.Editor {
     public sealed class AutoBattleTestWindow : EditorWindow {
-        private static readonly string[] StrategyLabels = { "소환만", "2티어 승급", "3티어 승급 (단계 운영)", "1~9스테이지 2티어 → 10스테이지부터 3티어" };
+        private static readonly string[] StrategyLabels = { "소환만", "2티어 승급", "3티어 승급 (단계 운영)", "1~9스테이지 2티어 → 10스테이지부터 3티어", "가능하면 항상 3기 승급" };
         private int _runs = 10;
         private int _baseSeed = 1000;
         private float _timeScale = 10f;
-        private AutoBattleStrategy _strategy = AutoBattleStrategy.PromoteToTier3;
+        private AutoBattleStrategy _strategy = AutoBattleStrategy.AlwaysPromote;
 
         [MenuItem("Tools/LARD/자동 전투 테스트")]
         private static void Open() => GetWindow<AutoBattleTestWindow>("자동 전투 테스트");
@@ -24,7 +24,7 @@ namespace LARD.Battle.Editor {
             EditorGUILayout.HelpBox(
                 "Battle 씬에서 실제 상점과 전투 로직으로 테스트합니다. " +
                 "기물 3기로 시작하며, 선택한 방식으로 실버를 사용합니다. " +
-                "골드는 두 종족을 번갈아 강화합니다. 3티어 승급 전략은 3스테이지 종료 시 종족을 선택합니다. " +
+                "골드는 두 종족을 번갈아 강화합니다. 항상 승급 전략은 요즈와 실린을 강화합니다. 단계 운영 전략은 3스테이지 종료 시 종족을 선택합니다. " +
                 "매 실행마다 전투를 재시작하며 결과는 AutoBattleResults에 저장됩니다.",
                 MessageType.Info);
             _runs = EditorGUILayout.IntSlider("실행 횟수", _runs, 1, 100);
@@ -38,6 +38,14 @@ namespace LARD.Battle.Editor {
             }
             if (AutoBattleTestBatch.IsRunning)
                 EditorGUILayout.LabelField("진행 중", AutoBattleTestBatch.Progress);
+
+            string projectRoot = Directory.GetParent(Application.dataPath).FullName;
+            string cliScript = Path.Combine(projectRoot, "Tools", "run_auto_battle.py");
+            using (new EditorGUI.DisabledScope(!File.Exists(cliScript))) {
+                if (GUILayout.Button("CLI 테스트 Python 폴더 열기"))
+                    EditorUtility.RevealInFinder(cliScript);
+            }
+            EditorGUILayout.HelpBox("CLI 테스트는 Unity 편집기를 종료한 뒤 Python 파일을 실행하세요.", MessageType.None);
 
             string resultDirectory = AutoBattleTestBatch.LatestResultDirectory;
             using (new EditorGUI.DisabledScope(!Directory.Exists(resultDirectory))) {
@@ -59,6 +67,7 @@ namespace LARD.Battle.Editor {
         private const string StrategyKey = Prefix + "Strategy";
         private const string DirectoryKey = Prefix + "Directory";
         private const string FastPlayModeKey = Prefix + "FastPlayMode";
+        private static int _attachedRun = -1;
         private static string LastDirectoryKey => Prefix + "LastDirectory." + Application.dataPath;
 
         public static bool IsRunning => SessionState.GetBool(ActiveKey, false);
@@ -75,7 +84,15 @@ namespace LARD.Battle.Editor {
 
         static AutoBattleTestBatch() {
             EditorApplication.playModeStateChanged += OnPlayModeChanged;
+            EditorApplication.update += AttachDriverIfNeeded;
             SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private static void AttachDriverIfNeeded() {
+            if (!IsRunning || !EditorApplication.isPlaying) return;
+            int run = SessionState.GetInt(RunKey, 0);
+            if (run == _attachedRun || BattleManager.Instance == null) return;
+            AttachDriver();
         }
 
         public static void Start(int runs, int baseSeed, float timeScale, AutoBattleStrategy strategy) {
@@ -105,14 +122,14 @@ namespace LARD.Battle.Editor {
 
         // Batch mode: Unity.exe -batchmode -nographics -projectPath <project> \
         //   -executeMethod LARD.Battle.Editor.AutoBattleTestBatch.RunFromCommandLine \
-        //   -autoRuns 10 -autoSeed 1000 -autoSpeed 10 -autoStrategy PromoteToTier3
+        //   -autoRuns 10 -autoSeed 1000 -autoSpeed 10 -autoStrategy AlwaysPromote
         // Do not pass -quit: this method enters Play mode and exits after the last run.
         public static void RunFromCommandLine() {
             string[] args = Environment.GetCommandLineArgs();
             int runs = ParseInt(args, "-autoRuns", 10);
             int seed = ParseInt(args, "-autoSeed", 1000);
             float speed = ParseFloat(args, "-autoSpeed", 10f);
-            string strategyText = ParseString(args, "-autoStrategy", "PromoteToTier3");
+            string strategyText = ParseString(args, "-autoStrategy", "AlwaysPromote");
             if (!Enum.TryParse(strategyText, true, out AutoBattleStrategy strategy))
                 throw new ArgumentException($"Unknown auto battle strategy: {strategyText}");
             Start(runs, seed, speed, strategy);
@@ -137,8 +154,9 @@ namespace LARD.Battle.Editor {
 
         private static void AttachDriver() {
             if (!IsRunning || !EditorApplication.isPlaying) return;
-            if (UnityEngine.Object.FindAnyObjectByType<AutoBattleTestDriver>() != null) return;
             int run = SessionState.GetInt(RunKey, 0);
+            if (run == _attachedRun) return;
+            if (UnityEngine.Object.FindAnyObjectByType<AutoBattleTestDriver>() != null) return;
             string file = RunPath(run);
             try {
                 GameObject holder = new GameObject("Auto Battle Test Driver");
@@ -147,7 +165,10 @@ namespace LARD.Battle.Editor {
                 driver.Configure(SessionState.GetInt(SeedKey, 1000) + run,
                     (AutoBattleStrategy)SessionState.GetInt(StrategyKey, 0),
                     SessionState.GetFloat(SpeedKey, 10f), file);
+                _attachedRun = run;
+                Debug.Log($"[AutoBattleTest] Driver attached for run {run + 1}. Result will be saved after this battle finishes.");
             } catch (Exception exception) {
+                _attachedRun = run;
                 Debug.LogException(exception);
                 File.WriteAllText(file, JsonUtility.ToJson(new AutoBattleRunResult {
                     seed = SessionState.GetInt(SeedKey, 1000) + run,

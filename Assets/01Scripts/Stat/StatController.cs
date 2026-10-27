@@ -1,6 +1,7 @@
 using UnityEngine;
 
 namespace LARD.Stat {
+    /// <summary>체력, 방어력과 이동 속도 상태 관리.</summary>
     public sealed class StatController : MonoBehaviour {
         [SerializeField, Min(0f)] private float _maxHealth = 100f;
         [SerializeField, Range(0f, 100f)] private float _defense;

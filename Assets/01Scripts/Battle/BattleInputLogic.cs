@@ -27,7 +27,6 @@ namespace LARD.Battle {
 
             _dragStart = screenPosition;
             _isDragging = true;
-            Debug.Log($"[BattleInput] Selection started at screen {screenPosition}.", this);
         }
 
         public void OnSelectReleased(Vector2 screenPosition) {
@@ -42,10 +41,8 @@ namespace LARD.Battle {
             }
 
             if ((screenPosition - _dragStart).sqrMagnitude < _dragThresholdPixels * _dragThresholdPixels) {
-                Debug.Log($"[BattleInput] Click resolved at world {end}.", this);
                 _battleManager.SelectAt(end);
             } else {
-                Debug.Log($"[BattleInput] Drag resolved from world {start} to {end}.", this);
                 _battleManager.SelectArea(start, end);
             }
         }
@@ -75,14 +72,12 @@ namespace LARD.Battle {
             worldPosition = default;
             Camera camera = _worldCamera != null ? _worldCamera : Camera.main;
             if (camera == null) {
-                Debug.LogWarning("[BattleInput] Screen-to-world failed: no camera assigned and Camera.main is null.", this);
                 return false;
             }
 
             Ray ray = camera.ScreenPointToRay(screenPosition);
             Plane ground = new Plane(Vector3.forward, Vector3.zero);
             if (!ground.Raycast(ray, out float distance)) {
-                Debug.LogWarning($"[BattleInput] Screen-to-world failed: camera ray does not reach the XY plane. Screen: {screenPosition}", this);
                 return false;
             }
 

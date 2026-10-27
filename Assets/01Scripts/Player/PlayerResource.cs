@@ -3,7 +3,7 @@ using LARD.Stat;
 
 namespace LARD.Player {
     public sealed class PlayerResource {
-        public long Silver { get; private set; } = 30;
+        public long Silver { get; private set; } = 50;
         public long Gold { get; private set; } = 0;
         public event Action<ResourceType, long> BalanceChanged;
 

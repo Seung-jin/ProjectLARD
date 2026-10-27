@@ -12,6 +12,7 @@ namespace LARD.Monster {
         Died,
     }
 
+    /// <summary>몬스터의 체력, 효과, 이동과 풀 수명 관리.</summary>
     [RequireComponent(typeof(Rigidbody2D), typeof(CapsuleCollider2D))]
     [RequireComponent(typeof(StatController), typeof(MoveComponentMonsterPath))]
     public sealed class MonsterObj : PoolingObject<MonsterObj>, IAttackTarget {

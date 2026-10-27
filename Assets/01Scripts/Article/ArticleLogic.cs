@@ -5,82 +5,165 @@ using LARD.Stat;
 using UnityEngine;
 
 namespace LARD.Article {
-    /// <summary>
-    /// 선택한 기물의 승급·판매 조건과 재화 처리, 오브젝트 교체를 담당한다.
-    /// </summary>
+    /// <summary>선택한 기물의 승급과 판매를 담당한다.</summary>
     public sealed class ArticleLogic {
-        private readonly IList<ArticleObj> _selectedArticles;
+        private const int PromotionMaterialCount = 3;
+
+        private readonly List<ArticleObj> _selectedArticles;
         private readonly ArticleFactory _factory;
 
-        public ArticleLogic(IList<ArticleObj> selectedArticles, ArticleFactory factory) {
+        public ArticleLogic(List<ArticleObj> selectedArticles, ArticleFactory factory) {
             _selectedArticles = selectedArticles ?? throw new ArgumentNullException(nameof(selectedArticles));
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
         }
 
-        /// <summary>승급 조건과 비용을 확인하고 확률 판정에 성공하면 기물을 다음 티어로 교체한다.</summary>
-        public bool TryUpgradeSelectedArticle() {
-            if (_selectedArticles.Count != 1) {
-                Debug.LogWarning($"[ArticlePromotion] Logic failed: exactly one article must be selected (selected: {_selectedArticles.Count}).");
+        /// <summary>선택한 같은 티어 기물 3마리를 다음 티어 기물 1마리로 합친다.</summary>
+        public bool TryUpgradeSelectedArticles() => TryPromoteMaterials(_selectedArticles);
+
+        public bool CanUpgradeAvailableArticles(int targetTier, ArticleRace? race) =>
+            TryFindMaterials(targetTier, race, out _, out _);
+
+        public bool TryUpgradeAvailableArticles(int targetTier, ArticleRace? race) {
+            if (!TryFindMaterials(targetTier, race, out List<ArticleObj> materials, out string reason)) {
+                Debug.LogWarning($"[ArticlePromotion] Logic failed: {reason}");
                 return false;
             }
 
-            ArticleObj article = _selectedArticles[0];
-            if (!TryGetUpgradeCost(article, out int cost, out string reason)) {
-                Debug.LogWarning($"[ArticlePromotion] Logic failed: {reason}", article);
+            return TryPromoteMaterials(materials);
+        }
+
+        private bool TryPromoteMaterials(IReadOnlyList<ArticleObj> materials) {
+            if (!TryGetPromotionOptions(materials, out ArticleRace[] races, out int nextTier, out string reason)) {
+                Debug.LogWarning($"[ArticlePromotion] Logic failed: {reason}");
                 return false;
             }
 
-            ArticleTierModel currentTier = ArticleDataSet.GetTierModel(article.Tier);
-            ArticleTierModel nextTier = ArticleDataSet.GetTierModel(article.Tier + 1);
-            ArticleModel nextModel;
-            bool foundNextModel = article.Tier == 1
-                ? ArticleDataSet.TryPickArticle(article.Model.Race, nextTier.Tier, out nextModel)
-                : ArticleDataSet.TryGetNextTierModel(article.Model, nextTier.Tier, out nextModel);
-            if (!foundNextModel) {
-                Debug.LogWarning($"[ArticlePromotion] Logic failed: no valid promotion model for article {article.Model.Id}, tier {nextTier.Tier}.", article);
+            ArticleRace race = races[UnityEngine.Random.Range(0, races.Length)];
+            if (!ArticleDataSet.TryPickArticle(race, nextTier, out ArticleModel nextModel) || nextModel.Prefab == null) {
+                Debug.LogWarning($"[ArticlePromotion] Logic failed: no summonable article for race {race}, tier {nextTier}.");
                 return false;
             }
 
-            PlayerResource resource = PlayerDataSet.Resource;
-            if (resource == null) {
-                Debug.LogWarning("[ArticlePromotion] Logic failed: player resource is not loaded.", article);
-                return false;
-            }
-
-            if (!resource.TrySpend(ResourceType.Silver, cost)) {
-                Debug.LogWarning($"[ArticlePromotion] Logic failed: Silver spend was rejected (current: {resource.Silver}, cost: {cost}).", article);
-                return false;
-            }
-
-            float roll = UnityEngine.Random.value;
-            if (roll >= currentTier.UpgradeProbability) {
-                Debug.Log($"[ArticlePromotion] Failed: article {article.Model.Id}, tier {article.Tier} -> {nextTier.Tier} (roll: {roll:P1}, chance: {currentTier.UpgradeProbability:P1}, cost: {cost} Silver).", article);
-                return false;
-            }
-
-            ArticleModel previousModel = article.Model;
-            int previousTier = article.Tier;
-            Vector3 position = article.transform.position;
-            Quaternion rotation = article.transform.rotation;
-
+            ArticleObj[] consumed = { materials[0], materials[1], materials[2] };
+            Vector3 position = consumed[0].transform.position;
+            Quaternion rotation = consumed[0].transform.rotation;
             ArticleObj promoted;
             try {
                 promoted = _factory.Create(nextModel, position, rotation);
             } catch (Exception exception) {
-                resource.Add(ResourceType.Silver, cost);
-                Debug.LogError($"[ArticlePromotion] Logic failed: article {nextModel.Id} could not be created at tier {nextTier.Tier}; {cost} Silver refunded.");
+                Debug.LogError($"[ArticlePromotion] Logic failed: article {nextModel.Id} could not be created. Materials were not consumed.");
                 Debug.LogException(exception);
                 return false;
             }
 
-            _factory.Release(article);
-            _selectedArticles[0] = promoted;
-            Debug.Log($"[ArticlePromotion] Succeeded: article {previousModel.Id} -> {nextModel.Id}, race {nextModel.Race}, tier {previousTier} -> {nextTier.Tier} (cost: {cost} Silver).", promoted);
+            foreach (ArticleObj material in consumed) {
+                _factory.Release(material);
+            }
+
+            _selectedArticles.Clear();
+            _selectedArticles.Add(promoted);
+            Debug.Log($"[ArticlePromotion] Succeeded: 3 articles -> article {nextModel.Id}, race {race}, tier {nextTier}.", promoted);
             return true;
         }
 
-        public static bool TryGetUpgradeCost(ArticleObj article, out int cost) {
-            return TryGetUpgradeCost(article, out cost, out _);
+        private static bool TryFindMaterials(int targetTier, ArticleRace? race, out List<ArticleObj> materials,
+                                             out string reason) {
+            materials = new List<ArticleObj>(PromotionMaterialCount);
+            reason = null;
+            if (targetTier < 2 || ArticleDataSet.GetTierModel(targetTier) == null) {
+                reason = $"tier {targetTier} data is missing or invalid.";
+                return false;
+            }
+
+            ArticleObj[] available = UnityEngine.Object.FindObjectsByType<ArticleObj>(FindObjectsSortMode.None);
+            Array.Sort(available, (left, right) => left.Id.CompareTo(right.Id));
+            ArticleRace[] requiredRaces = race.HasValue
+                ? new[] { race.Value, race.Value, race.Value }
+                : new[] { ArticleRace.Beastkin, ArticleRace.Mage, ArticleRace.Warrior };
+            foreach (ArticleRace requiredRace in requiredRaces) {
+                ArticleObj found = null;
+                foreach (ArticleObj article in available) {
+                    if (article == null || !article.gameObject.activeInHierarchy || article.IsInPool ||
+                        article.Model == null || article.Tier != targetTier - 1 ||
+                        article.Model.Race != requiredRace || materials.Contains(article)) continue;
+                    found = article;
+                    break;
+                }
+
+                if (found == null) {
+                    reason = $"not enough tier {targetTier - 1} articles for race {requiredRace}.";
+                    return false;
+                }
+                materials.Add(found);
+            }
+
+            return CanPromoteArticles(materials, out reason);
+        }
+
+        public bool CanUpgradeSelectedArticles(out string reason) =>
+            TryGetPromotionOptions(_selectedArticles, out _, out _, out reason);
+
+        public static bool CanPromoteArticles(IReadOnlyList<ArticleObj> articles, out string reason) =>
+            TryGetPromotionOptions(articles, out _, out _, out reason);
+
+        private static bool TryGetPromotionOptions(IReadOnlyList<ArticleObj> articles, out ArticleRace[] races,
+                                                    out int nextTier, out string reason) {
+            races = null;
+            nextTier = 0;
+            reason = null;
+            if (articles == null || articles.Count != PromotionMaterialCount) {
+                reason = $"exactly {PromotionMaterialCount} articles must be selected (selected: {articles?.Count ?? 0}).";
+                return false;
+            }
+
+            var uniqueArticles = new HashSet<ArticleObj>();
+            var selectedRaces = new HashSet<ArticleRace>();
+            int tier = 0;
+            foreach (ArticleObj article in articles) {
+                if (article == null || !article.gameObject.activeInHierarchy || article.IsInPool || article.Model == null ||
+                    !uniqueArticles.Add(article)) {
+                    reason = "a selected article is missing, inactive, or duplicated.";
+                    return false;
+                }
+
+                if (tier == 0) tier = article.Tier;
+                if (article.Tier != tier) {
+                    reason = "all three articles must have the same tier.";
+                    return false;
+                }
+                selectedRaces.Add(article.Model.Race);
+            }
+
+            nextTier = tier + 1;
+            if (ArticleDataSet.GetTierModel(nextTier) == null) {
+                reason = $"tier {nextTier} data is missing.";
+                return false;
+            }
+
+            if (selectedRaces.Count == 1) {
+                ArticleRace race = articles[0].Model.Race;
+                if (!ArticleDataSet.HasArticle(race, nextTier)) {
+                    reason = $"no article is available for race {race}, tier {nextTier}.";
+                    return false;
+                }
+                races = new[] { race };
+                return true;
+            }
+
+            if (selectedRaces.Count != 3 || !selectedRaces.Contains(ArticleRace.Beastkin) ||
+                !selectedRaces.Contains(ArticleRace.Mage) || !selectedRaces.Contains(ArticleRace.Warrior)) {
+                reason = "select three of the same race or one from each race.";
+                return false;
+            }
+
+            foreach (ArticleRace selectedRace in selectedRaces) {
+                if (ArticleDataSet.HasArticle(selectedRace, nextTier)) continue;
+                reason = $"no article is available for race {selectedRace}, tier {nextTier}.";
+                return false;
+            }
+
+            races = new[] { ArticleRace.Beastkin, ArticleRace.Mage, ArticleRace.Warrior };
+            return true;
         }
 
         /// <summary>선택한 기물을 반환하고 판매 대금을 지급한다.</summary>
@@ -123,50 +206,6 @@ namespace LARD.Article {
             }
 
             cost = tierModel.SaleCost;
-            return true;
-        }
-
-        private static bool TryGetUpgradeCost(ArticleObj article, out int cost, out string reason) {
-            cost = 0;
-            reason = null;
-            if (article == null || !article.gameObject.activeInHierarchy || article.IsInPool || article.Model == null) {
-                reason = "the selected article is missing or inactive.";
-                return false;
-            }
-
-            ArticleTierModel currentTier = ArticleDataSet.GetTierModel(article.Tier);
-            if (currentTier == null) {
-                reason = $"tier {article.Tier} data is missing.";
-                return false;
-            }
-
-            if (currentTier.UpgradeCost <= 0 || currentTier.UpgradeProbability <= 0f) {
-                reason = $"tier {article.Tier} has no valid promotion cost or chance.";
-                return false;
-            }
-
-            ArticleTierModel nextTier = ArticleDataSet.GetTierModel(article.Tier + 1);
-            if (nextTier == null || nextTier.Tier != article.Tier + 1) {
-                reason = $"tier {article.Tier + 1} data is missing or invalid.";
-                return false;
-            }
-
-            if (article.Tier == 1 && !ArticleDataSet.HasArticle(article.Model.Race, nextTier.Tier)) {
-                reason = $"no article is available for race {article.Model.Race}, tier {nextTier.Tier}.";
-                return false;
-            }
-
-            if (article.Tier >= 2 && !ArticleDataSet.TryGetNextTierModel(article.Model, nextTier.Tier, out _)) {
-                reason = $"article {article.Model.Id} has no valid same-class model at tier {nextTier.Tier}.";
-                return false;
-            }
-
-            if (article.Model.Prefab == null) {
-                reason = $"article {article.Model.Id} has no prefab.";
-                return false;
-            }
-
-            cost = currentTier.UpgradeCost;
             return true;
         }
     }

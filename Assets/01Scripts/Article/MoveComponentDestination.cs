@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using LARD.Battle;
 using UnityEngine;
 
@@ -6,6 +7,16 @@ namespace LARD.Article {
     /// 기물을 지정한 위치로 이동시키고 이동 시작 시 진행 중인 스킬을 취소한다.
     /// </summary>
     public sealed class MoveComponentDestination : MoveComponent {
+        public readonly struct DestinationReservation {
+            public readonly Vector2 Position;
+            public readonly float Radius;
+
+            public DestinationReservation(Vector2 position, float radius) {
+                Position = position;
+                Radius = radius;
+            }
+        }
+
         [SerializeField, Min(0f)] private float _arrivalDistance = 0.05f;
         [SerializeField, Min(0f)] private float _avoidanceGap = 0.02f;
 
@@ -17,8 +28,12 @@ namespace LARD.Article {
         private SkillController _skillController;
         private CapsuleCollider2D _bodyCollider;
         private Map _map;
+        private float _bestDistance;
+        private float _lastProgressTime;
+        private bool _triedReachableDestination;
 
         public bool IsMoving => _hasDestination;
+        public float BodyRadius => GetRadius(_bodyCollider);
 
         protected override void Awake() {
             base.Awake();
@@ -28,19 +43,29 @@ namespace LARD.Article {
         }
 
         public void SetDestination(Vector2 destination) {
-            if (!TryFindFreeDestination(destination, out _destination)) {
+            TrySetDestination(destination, null, null, out _);
+        }
+
+        public bool TrySetDestination(Vector2 requested, IReadOnlyList<DestinationReservation> reservations,
+                                      ICollection<ArticleObj> ignoredArticles, out Vector2 assigned) {
+            if (!TryFindFreeDestination(requested, reservations, ignoredArticles, false, out assigned)) {
                 Stop();
-                return;
+                return false;
             }
 
+            _destination = assigned;
             if ((_destination - _rigidbody.position).sqrMagnitude <= _arrivalDistance * _arrivalDistance) {
                 Stop();
-                return;
+                return true;
             }
 
             _hasDestination = true;
             _detourStage = 0;
+            _bestDistance = Vector2.Distance(_rigidbody.position, _destination);
+            _lastProgressTime = Time.time;
+            _triedReachableDestination = false;
             _skillController?.CancelCurrentSkill();
+            return true;
         }
 
         public override void Move() {
@@ -55,6 +80,28 @@ namespace LARD.Article {
                 return;
             }
 
+            float remaining = Vector2.Distance(position, _destination);
+            if (remaining < _bestDistance - Mathf.Max(0.02f, _arrivalDistance)) {
+                _bestDistance = remaining;
+                _lastProgressTime = Time.time;
+            } else if (Time.time - _lastProgressTime > 2f) {
+                if (_triedReachableDestination ||
+                    !TryFindFreeDestination(_destination, null, null, true, out Vector2 reachable)) {
+                    Stop();
+                    return;
+                }
+
+                _triedReachableDestination = true;
+                _destination = reachable;
+                _detourStage = 0;
+                _bestDistance = Vector2.Distance(position, reachable);
+                _lastProgressTime = Time.time;
+                if (_bestDistance <= _arrivalDistance) {
+                    Stop();
+                    return;
+                }
+            }
+
             Vector2 target = _detourStage == 1 ? _detourEntry :
                 _detourStage == 2 ? _detourExit : _destination;
             if (_detourStage != 0 && (target - position).sqrMagnitude <= _arrivalDistance * _arrivalDistance) {
@@ -63,8 +110,11 @@ namespace LARD.Article {
             }
 
             if (TryFindBlockingArticle(position, target, out CapsuleCollider2D blocker)) {
-                // 이동 중인 다른 기물도 매 물리 프레임에 다시 확인한다.
-                _detourStage = 0;
+                // 우회 중 경로가 잠시 막혀도 매 프레임 반대쪽으로 다시 돌지 않는다.
+                if (_detourStage != 0) {
+                    _rigidbody.linearVelocity = Vector2.zero;
+                    return;
+                }
                 if (!TryPlanDetour(position, _destination, blocker)) {
                     _rigidbody.linearVelocity = Vector2.zero;
                     return;
@@ -89,25 +139,39 @@ namespace LARD.Article {
             _rigidbody.linearVelocity = Vector2.zero;
         }
 
-        private bool TryFindFreeDestination(Vector2 requested, out Vector2 destination) {
+        private bool TryFindFreeDestination(Vector2 requested,
+                                             IReadOnlyList<DestinationReservation> reservations,
+                                             ICollection<ArticleObj> ignoredArticles, bool requireClearPath,
+                                             out Vector2 destination) {
+            if (_map != null) {
+                Vector2 halfExtents = _bodyCollider != null ? _bodyCollider.bounds.extents : Vector2.zero;
+                requested = _map.ClampArticlePosition(requested, halfExtents);
+            }
             destination = requested;
-            if (IsDestinationFree(requested)) return true;
+            if (IsInsideArticleArea(requested) &&
+                IsDestinationFree(requested, reservations, ignoredArticles) &&
+                (!requireClearPath || !TryFindBlockingArticle(_rigidbody.position, requested, out _))) return true;
 
             Vector2 approach = _rigidbody.position - requested;
             approach = approach.sqrMagnitude > 0.0001f ? approach.normalized : Vector2.right;
-            float step = Mathf.Max(0.05f, _avoidanceGap + _arrivalDistance);
-            float limit = _map != null ? Mathf.Min(1.5f, _map.ArticleAreaSize * 0.5f) : 1.5f;
+            float step = Mathf.Max(0.15f, BodyRadius);
+            float limit = _map != null ? _map.ArticleAreaSize * Mathf.Sqrt(2f) : 5f;
 
-            for (float radius = step; radius <= limit; radius += step) {
-                for (int angleIndex = 0; angleIndex < 16; angleIndex++) {
+            int ringCount = Mathf.CeilToInt(limit / step);
+            for (int ring = 1; ring <= ringCount; ring++) {
+                float radius = ring * step;
+                int angleCount = Mathf.Clamp(Mathf.CeilToInt(2f * Mathf.PI * radius / step), 16, 128);
+                for (int angleIndex = 0; angleIndex < angleCount; angleIndex++) {
                     int turn = angleIndex == 0 ? 0 : (angleIndex + 1) / 2 * (angleIndex % 2 == 1 ? 1 : -1);
-                    float angle = turn * Mathf.PI / 8f;
+                    float angle = turn * 2f * Mathf.PI / angleCount;
                     float cosine = Mathf.Cos(angle);
                     float sine = Mathf.Sin(angle);
                     Vector2 direction = new Vector2(approach.x * cosine - approach.y * sine,
                                                     approach.x * sine + approach.y * cosine);
                     Vector2 candidate = requested + direction * radius;
-                    if (!IsInsideArticleArea(candidate) || !IsDestinationFree(candidate)) continue;
+                    if (!IsInsideArticleArea(candidate) ||
+                        !IsDestinationFree(candidate, reservations, ignoredArticles) ||
+                        (requireClearPath && TryFindBlockingArticle(_rigidbody.position, candidate, out _))) continue;
                     destination = candidate;
                     return true;
                 }
@@ -116,13 +180,22 @@ namespace LARD.Article {
             return false;
         }
 
-        private bool IsDestinationFree(Vector2 destination) {
+        private bool IsDestinationFree(Vector2 destination, IReadOnlyList<DestinationReservation> reservations,
+                                       ICollection<ArticleObj> ignoredArticles) {
+            if (reservations != null) {
+                foreach (DestinationReservation reservation in reservations) {
+                    float spacing = BodyRadius + reservation.Radius + _avoidanceGap;
+                    if ((destination - reservation.Position).sqrMagnitude < spacing * spacing) return false;
+                }
+            }
+
             Vector2 center = destination + GetCastOffset();
             float radius = GetRadius(_bodyCollider) + _avoidanceGap * 0.5f;
             foreach (Collider2D hit in Physics2D.OverlapCircleAll(center, radius)) {
                 if (hit is CapsuleCollider2D candidate && candidate != _bodyCollider &&
                     candidate.TryGetComponent<ArticleObj>(out ArticleObj article) &&
-                    article.gameObject.activeInHierarchy && !article.IsInPool) return false;
+                    article.gameObject.activeInHierarchy && !article.IsInPool &&
+                    (ignoredArticles == null || !ignoredArticles.Contains(article))) return false;
             }
 
             return true;

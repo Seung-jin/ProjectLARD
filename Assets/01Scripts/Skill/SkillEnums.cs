@@ -23,13 +23,4 @@ namespace LARD.Skill {
         OnTick,
     }
 
-    public enum EffectStackPolicy {
-    }
-
-    public enum EffectDurationPolicy {
-    }
-
-    public enum EffectStackScope {
-    }
-
 }

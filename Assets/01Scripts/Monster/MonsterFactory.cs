@@ -4,6 +4,7 @@ using LARD.Battle;
 using UnityEngine;
 
 namespace LARD.Monster {
+    /// <summary>몬스터 프리팹별 풀을 통한 생성과 반환 관리.</summary>
     public sealed class MonsterFactory {
         private readonly Dictionary<MonsterObj, ObjectPooler<MonsterObj>> _pools = new();
         private readonly Transform _parent;

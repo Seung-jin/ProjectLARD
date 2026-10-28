@@ -123,6 +123,7 @@ Packages/packages-lock.json linguist-generated
 *.bmp                   lfs
 *.exr                   lfs
 *.gif                   lfs
+docs/*.gif              -filter -diff -merge
 *.hdr                   lfs
 *.iff                   lfs
 *.jpeg                  lfs

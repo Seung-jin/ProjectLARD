@@ -1,5 +1,6 @@
 using System;
 using LARD.Player;
+using LARD.Stage;
 using LARD.Stat;
 
 namespace LARD.Battle {
@@ -37,8 +38,14 @@ namespace LARD.Battle {
                 return false;
             }
 
-            _battleManager.CompleteDefeat();
+            CompleteDefeat();
             return true;
+        }
+
+        /// <summary>패배 처리를 한곳에서 실행한다. 결과 UI도 이 함수에 연결한다.</summary>
+        private void CompleteDefeat() {
+            StageLogic.CompleteDefeat();
+            _battleManager.CompleteDefeat();
         }
     }
 }

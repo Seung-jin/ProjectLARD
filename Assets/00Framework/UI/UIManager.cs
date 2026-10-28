@@ -11,6 +11,7 @@ namespace LSJ.UI {
 		Battle,
 		Shop,
 		ArticleInfo,
+		BattleResult,
 	}
 
 	public class UIManager : Singleton<UIManager> {
@@ -27,9 +28,9 @@ namespace LSJ.UI {
 		// 경로 추가 시 오브젝트 이름 앞에 나머지 경로 추가
 		// 파일 확장자인 .prefab 입력은 필요하지 않음
 		private static Dictionary<UIType, string> _prefabKeyDic = new() {
-
 			{ UIType.Battle, "Battle/UIBattle" },
 			{ UIType.Shop, "Shop/UIShop" },
+			{ UIType.BattleResult, "Battle/UIBattleResult" },
 		};
 
 		// 데이터 로드 완료 여부

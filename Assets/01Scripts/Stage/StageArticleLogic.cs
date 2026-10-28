@@ -14,6 +14,7 @@ namespace LARD.Stage {
         private static float _formationGap;
         private static List<ArticleObj> _selectedArticles;
         private static ArticleFactory _articleFactory;
+        private static bool _battleEnded;
         private static bool _init;
 
         public static ArticleFactory ArticleFactory => _articleFactory;
@@ -28,6 +29,7 @@ namespace LARD.Stage {
             _formationGap = formationGap;
             _selectedArticles = selectedArticles ?? throw new ArgumentNullException(nameof(selectedArticles));
             _articleFactory = new ArticleFactory();
+            _battleEnded = false;
             _init = true;
         }
 
@@ -90,8 +92,8 @@ namespace LARD.Stage {
         /// <summary>소환 위치를 확보하고 기존 기물의 배치를 조정한 뒤 새 기물을 생성한다.</summary>
         public static bool TrySummonArticle(int articleId, out ArticleObj article) {
             article = null;
-            if (!_init || _map == null || _articleFactory == null) {
-                Debug.LogWarning("[StageLogic] Article summon failed: stage is not initialized or Map is missing.");
+            if (!_init || _battleEnded || _map == null || _articleFactory == null) {
+                Debug.LogWarning("[StageLogic] Article summon failed: stage is unavailable, ended, or Map is missing.");
                 return false;
             }
 
@@ -294,6 +296,19 @@ namespace LARD.Stage {
                 } else {
                     reservations.Add(new MoveComponentDestination.DestinationReservation(
                         article.transform.position, GetRadius(article)));
+                }
+            }
+        }
+
+        /// <summary>전투에 남아 있는 기물을 풀로 반환하고 선택 상태를 비운다.</summary>
+        public static void ReleaseAllArticles() {
+            if (!_init) return;
+
+            _battleEnded = true;
+            _selectedArticles.Clear();
+            foreach (ArticleObj article in UnityEngine.Object.FindObjectsByType<ArticleObj>(FindObjectsSortMode.None)) {
+                if (article != null && article.gameObject.activeInHierarchy && !article.IsInPool) {
+                    _articleFactory.Release(article);
                 }
             }
         }

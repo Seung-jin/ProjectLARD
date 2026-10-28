@@ -79,7 +79,7 @@ namespace LARD.Article {
             Array.Sort(available, (left, right) => left.Id.CompareTo(right.Id));
             ArticleRace[] requiredRaces = race.HasValue
                 ? new[] { race.Value, race.Value, race.Value }
-                : new[] { ArticleRace.Beastkin, ArticleRace.Mage, ArticleRace.Warrior };
+                : new[] { ArticleRace.BeastSkin, ArticleRace.Mage, ArticleRace.Warrior };
             foreach (ArticleRace requiredRace in requiredRaces) {
                 ArticleObj found = null;
                 foreach (ArticleObj article in available) {
@@ -150,7 +150,7 @@ namespace LARD.Article {
                 return true;
             }
 
-            if (selectedRaces.Count != 3 || !selectedRaces.Contains(ArticleRace.Beastkin) ||
+            if (selectedRaces.Count != 3 || !selectedRaces.Contains(ArticleRace.BeastSkin) ||
                 !selectedRaces.Contains(ArticleRace.Mage) || !selectedRaces.Contains(ArticleRace.Warrior)) {
                 reason = "select three of the same race or one from each race.";
                 return false;
@@ -162,7 +162,7 @@ namespace LARD.Article {
                 return false;
             }
 
-            races = new[] { ArticleRace.Beastkin, ArticleRace.Mage, ArticleRace.Warrior };
+            races = new[] { ArticleRace.BeastSkin, ArticleRace.Mage, ArticleRace.Warrior };
             return true;
         }
 

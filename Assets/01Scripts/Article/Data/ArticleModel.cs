@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace LARD.Article {
 	public enum ArticleRace {
-		Beastkin = 0,
-		Warrior = 2,
+		BeastSkin = 0,
 		Mage = 1,
+		Warrior = 2,
 	}
 
 	// 기물의 기본 능력치와 스킬 데이터

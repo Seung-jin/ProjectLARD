@@ -12,6 +12,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: MonsterObjBase
       objectReference: {fileID: 0}
+    - target: {fileID: 200002, guid: 7465123629f64b5cb53d3eb9536ab8a7, type: 3}
+      propertyPath: m_Sprite
+      value:
+      objectReference: {fileID: 21300000, guid: dcb3a12ae6c3476b84d853bb871bb7fb, type: 3}
     - target: {fileID: 100001, guid: 7465123629f64b5cb53d3eb9536ab8a7, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

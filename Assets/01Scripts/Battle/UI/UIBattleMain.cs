@@ -16,38 +16,38 @@ namespace LARD.Battle {
 		[SerializeField] private TextMeshProUGUI _silverText;
 		[SerializeField] private TextMeshProUGUI _goldText;
 		[SerializeField] private Button _summonBtn;
-		[SerializeField] private Button _yozTier2Btn;
-		[SerializeField] private Button _sylinTier2Btn;
-		[SerializeField] private Button _shushireTier2Btn;
+		[SerializeField] private Button _race1Tier2Btn;
+		[SerializeField] private Button _race2Tier2Btn;
+		[SerializeField] private Button _race3Tier2Btn;
 		[SerializeField] private Button _mixedTier2Btn;
-		[SerializeField] private Button _yozTier3Btn;
-		[SerializeField] private Button _sylinTier3Btn;
-		[SerializeField] private Button _shushireTier3Btn;
+		[SerializeField] private Button _race1Tier3Btn;
+		[SerializeField] private Button _race2Tier3Btn;
+		[SerializeField] private Button _race3Tier3Btn;
 		[SerializeField] private Button _mixedTier3Btn;
 		[SerializeField] private Button _startBattleBtn;
 		[SerializeField] private Button _restartBtn;
 		[SerializeField] private UIArticleInfo _articleInfo;
-		[SerializeField] private SlotRaceUpgrade _yozUpgradeSlot;
-		[SerializeField] private SlotRaceUpgrade _sylinUpgradeSlot;
-		[SerializeField] private SlotRaceUpgrade _shushireUpgradeSlot;
+		[SerializeField] private SlotRaceUpgrade _race1UpgradeSlot;
+		[SerializeField] private SlotRaceUpgrade _race2UpgradeSlot;
+		[SerializeField] private SlotRaceUpgrade _race3UpgradeSlot;
 
 		public override void Init(UIType type) {
 			base.Init(type);
 			_summonBtn.onClick.AddListener(OnClickSummonBtn);
-			BindPromotionButton(_yozTier2Btn, 2, ArticleRace.Beastkin);
-			BindPromotionButton(_sylinTier2Btn, 2, ArticleRace.Mage);
-			BindPromotionButton(_shushireTier2Btn, 2, ArticleRace.Warrior);
+			BindPromotionButton(_race1Tier2Btn, 2, ArticleRace.BeastSkin);
+			BindPromotionButton(_race2Tier2Btn, 2, ArticleRace.Mage);
+			BindPromotionButton(_race3Tier2Btn, 2, ArticleRace.Warrior);
 			BindPromotionButton(_mixedTier2Btn, 2, null);
-			BindPromotionButton(_yozTier3Btn, 3, ArticleRace.Beastkin);
-			BindPromotionButton(_sylinTier3Btn, 3, ArticleRace.Mage);
-			BindPromotionButton(_shushireTier3Btn, 3, ArticleRace.Warrior);
+			BindPromotionButton(_race1Tier3Btn, 3, ArticleRace.BeastSkin);
+			BindPromotionButton(_race2Tier3Btn, 3, ArticleRace.Mage);
+			BindPromotionButton(_race3Tier3Btn, 3, ArticleRace.Warrior);
 			BindPromotionButton(_mixedTier3Btn, 3, null);
 			_startBattleBtn.onClick.AddListener(OnClickStartBattleBtn);
 			_restartBtn.onClick.AddListener(OnClickRestartBtn);
 			_articleInfo.Init(UIType.ArticleInfo);
-			_yozUpgradeSlot.Init(ArticleRace.Beastkin);
-			_sylinUpgradeSlot.Init(ArticleRace.Mage);
-			_shushireUpgradeSlot.Init(ArticleRace.Warrior);
+			_race1UpgradeSlot.Init(ArticleRace.BeastSkin);
+			_race2UpgradeSlot.Init(ArticleRace.Mage);
+			_race3UpgradeSlot.Init(ArticleRace.Warrior);
 		}
 
 		public override void Show(params object[] args) {
@@ -135,13 +135,13 @@ namespace LARD.Battle {
 		private void UpdatePromotionButtons() {
 			BattleManager manager = BattleManager.Instance;
 			if (manager == null) return;
-			_yozTier2Btn.interactable = manager.CanUpgradeAvailableArticles(2, ArticleRace.Beastkin);
-			_sylinTier2Btn.interactable = manager.CanUpgradeAvailableArticles(2, ArticleRace.Mage);
-			_shushireTier2Btn.interactable = manager.CanUpgradeAvailableArticles(2, ArticleRace.Warrior);
+			_race1Tier2Btn.interactable = manager.CanUpgradeAvailableArticles(2, ArticleRace.BeastSkin);
+			_race2Tier2Btn.interactable = manager.CanUpgradeAvailableArticles(2, ArticleRace.Mage);
+			_race3Tier2Btn.interactable = manager.CanUpgradeAvailableArticles(2, ArticleRace.Warrior);
 			_mixedTier2Btn.interactable = manager.CanUpgradeAvailableArticles(2, null);
-			_yozTier3Btn.interactable = manager.CanUpgradeAvailableArticles(3, ArticleRace.Beastkin);
-			_sylinTier3Btn.interactable = manager.CanUpgradeAvailableArticles(3, ArticleRace.Mage);
-			_shushireTier3Btn.interactable = manager.CanUpgradeAvailableArticles(3, ArticleRace.Warrior);
+			_race1Tier3Btn.interactable = manager.CanUpgradeAvailableArticles(3, ArticleRace.BeastSkin);
+			_race2Tier3Btn.interactable = manager.CanUpgradeAvailableArticles(3, ArticleRace.Mage);
+			_race3Tier3Btn.interactable = manager.CanUpgradeAvailableArticles(3, ArticleRace.Warrior);
 			_mixedTier3Btn.interactable = manager.CanUpgradeAvailableArticles(3, null);
 		}
 

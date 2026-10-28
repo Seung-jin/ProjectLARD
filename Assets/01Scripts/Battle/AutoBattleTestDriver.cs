@@ -68,7 +68,7 @@ namespace LARD.Battle {
         private const int Tier3StrategyAlternatingThroughStage = 5;
         private const int Tier3StrategyPromotionStartStage = 9;
         private const float LoadTimeoutSeconds = 60f;
-        private static readonly ArticleRace[] UpgradedRaces = { ArticleRace.Beastkin, ArticleRace.Mage };
+        private static readonly ArticleRace[] UpgradedRaces = { ArticleRace.BeastSkin, ArticleRace.Mage };
 
         private BattleManager _battle;
         private AutoBattleStrategy _strategy;
@@ -251,7 +251,7 @@ namespace LARD.Battle {
             active.Sort((left, right) => left.Id.CompareTo(right.Id));
 
             for (int tier = Mathf.Min(2, targetTier - 1); tier >= 1; tier--) {
-                foreach (ArticleRace race in new[] { ArticleRace.Beastkin, ArticleRace.Mage, ArticleRace.Warrior }) {
+                foreach (ArticleRace race in new[] { ArticleRace.BeastSkin, ArticleRace.Mage, ArticleRace.Warrior }) {
                     List<ArticleObj> group = active.FindAll(article => article.Tier == tier && article.Model.Race == race);
                     if (group.Count < 3) continue;
                     List<ArticleObj> candidates = group.GetRange(0, 3);
@@ -259,7 +259,7 @@ namespace LARD.Battle {
                 }
 
                 List<ArticleObj> mixed = new();
-                foreach (ArticleRace race in new[] { ArticleRace.Beastkin, ArticleRace.Mage, ArticleRace.Warrior }) {
+                foreach (ArticleRace race in new[] { ArticleRace.BeastSkin, ArticleRace.Mage, ArticleRace.Warrior }) {
                     ArticleObj article = active.Find(item => item.Tier == tier && item.Model.Race == race);
                     if (article != null) mixed.Add(article);
                 }
@@ -357,7 +357,7 @@ namespace LARD.Battle {
                 summons = _result.summons,
                 silver = PlayerDataSet.Resource?.Silver ?? 0,
                 gold = PlayerDataSet.Resource?.Gold ?? 0,
-                beastkinLevel = UpgradeDataSet.GetPlayerUpgrade(ArticleRace.Beastkin)?.Level ?? 0,
+                beastkinLevel = UpgradeDataSet.GetPlayerUpgrade(ArticleRace.BeastSkin)?.Level ?? 0,
                 mageLevel = UpgradeDataSet.GetPlayerUpgrade(ArticleRace.Mage)?.Level ?? 0,
                 warriorLevel = UpgradeDataSet.GetPlayerUpgrade(ArticleRace.Warrior)?.Level ?? 0,
             };

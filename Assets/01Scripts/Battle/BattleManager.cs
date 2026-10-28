@@ -28,6 +28,7 @@ namespace LARD.Battle {
 		private BattleLogic _battleLogic;
 		private bool _battleStartRequested;
 		private bool _restartRequested;
+		private bool _resultShown;
 
 		public IReadOnlyList<ArticleObj> SelectedArticles => _selectedArticles;
 		public ArticleObj SelectedArticle => _selectedArticles.Count == 1 && _selectedArticles[0] != null &&
@@ -161,6 +162,7 @@ namespace LARD.Battle {
 			SetRemainingStageSeconds(0);
 			Debug.Log("[Battle] Victory! All monsters have been defeated after the final stage spawned.", this);
 			VictoryAchieved?.Invoke();
+			ShowBattleResult(true);
 		}
 
 		/// <summary>진행 중인 전투를 패배 상태로 전환하고 결과를 알린다.</summary>
@@ -170,8 +172,23 @@ namespace LARD.Battle {
 			}
 
 			State = BattleStateType.Defeat;
+			SelectionChanged?.Invoke(null);
 			Debug.Log("[Battle] Defeat! The stage timer expired before all monsters were defeated.", this);
 			DefeatAchieved?.Invoke();
+			ShowBattleResult(false);
+		}
+
+		private void ShowBattleResult(bool isWin) {
+			if (_resultShown) return;
+
+			UIManager manager = UIManager.Instance;
+			if (manager == null) {
+				Debug.LogError("[Battle] UIManager is missing; battle result could not be shown.", this);
+				return;
+			}
+
+			_resultShown = true;
+			manager.Show(UIType.BattleResult, UIBattleResult.MakeParam(isWin));
 		}
 
 		// 전투 입력 등록

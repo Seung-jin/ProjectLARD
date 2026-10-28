@@ -42,6 +42,12 @@ namespace LARD.Stage {
         public static UniTask RunAsync(CancellationToken cancellationToken) =>
             StageBattleLogic.RunAsync(cancellationToken);
 
+        /// <summary>패배 시 스테이지 진행을 중단하고 전투 오브젝트를 풀에 반환한다.</summary>
+        public static void CompleteDefeat() {
+            StageBattleLogic.CompleteDefeat();
+            StageArticleLogic.ReleaseAllArticles();
+        }
+
         public static void Dispose() {
             StageBattleLogic.Dispose();
             StageArticleLogic.Dispose();

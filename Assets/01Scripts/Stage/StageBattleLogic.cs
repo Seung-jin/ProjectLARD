@@ -146,9 +146,17 @@ namespace LARD.Stage {
                 nextInterval = 1f;
             }
 
-            if (!_hasWon && _stageTimeExpired(_stageSpawnsCompleted)) {
-                _hasLost = true;
-                _stageSequenceCancellation?.Cancel();
+            if (!_hasWon) _stageTimeExpired(_stageSpawnsCompleted);
+        }
+
+        /// <summary>시간 초과 패배 시 스테이지 진행을 멈추고 남은 몬스터를 반환한다.</summary>
+        public static void CompleteDefeat() {
+            if (!_init || _hasWon || _hasLost) return;
+
+            _hasLost = true;
+            _stageSequenceCancellation?.Cancel();
+            foreach (MonsterObj monster in _aliveMonsters.ToArray()) {
+                if (monster != null && !monster.IsInPool) _monsterFactory.Release(monster);
             }
         }
 
